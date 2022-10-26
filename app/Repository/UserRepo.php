@@ -23,7 +23,7 @@ class UserRepo{
     public static function get_user($user_id, $return_fields=["*"])
     {
         //query
-        $user=UserModel::select($return_fields)
+        $user=UserModel::select($return_fields)->with("region")
             ->where("id_user", $user_id);
         
         //return
@@ -38,7 +38,7 @@ class UserRepo{
         $params['status']=trim($params['status']);
 
         //query
-        $users=UserModel::select($return_fields);
+        $users=UserModel::select($return_fields)->with("region");
         //--q
         $users=$users->where(function($query) use($params){
             $query->where("nama_lengkap", "like", "%".$params['q']."%")

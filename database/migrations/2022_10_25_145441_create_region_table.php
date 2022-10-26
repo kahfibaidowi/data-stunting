@@ -19,6 +19,12 @@ return new class extends Migration
             $table->text("type");
             $table->text("region");
             $table->timestamps();
+
+            //fk
+            $table->foreign("nested")
+                ->references("id_region")
+                ->on("tbl_region")
+                ->onDelete("cascade");
         });
     }
 

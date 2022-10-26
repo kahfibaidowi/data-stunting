@@ -23,6 +23,16 @@ $router->group(['prefix'=>'/auth', 'middleware'=>'auth'], function()use($router)
 });
 $router->post("/auth/login", ['uses'=>"AuthController@login"]);
 
+//REGION
+$router->group(['prefix'=>'/region', 'middleware'=>'auth'], function()use($router){
+    $router->get("/type/kecamatan", ['uses'=>"RegionController@gets_kecamatan"]);
+    $router->get("/type/desa", ['uses'=>"RegionController@gets_desa"]);
+    $router->get("/{id}", ['uses'=>"RegionController@get"]);
+    $router->post("/", ['uses'=>"RegionController@add"]);
+    $router->delete("/{id}", ['uses'=>"RegionController@delete"]);
+    $router->put("/{id}", ['uses'=>"RegionController@update"]);
+});
+
 //USER
 $router->group(['prefix'=>'/user', 'middleware'=>'auth'], function()use($router){
     $router->get("/", ['uses'=>"UserController@gets"]);

@@ -29,4 +29,8 @@ class UserModel extends Model{
     public function user_login(){
         return $this->hasMany(UserLoginModel::class, "id_user");
     }
+
+    public function region(){
+        return $this->belongsTo(RegionModel::class, "id_region");
+    }
 }
