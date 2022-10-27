@@ -8,29 +8,27 @@ use App\Models\UserLoginModel;
 
 class UserRepo{
     
-    public static function get_user_by_username($username, $return_fields=["*"])
+    public static function get_user_by_username($username)
     {
         //query
-        $user=UserModel::select($return_fields)
-            ->where("username", $username);
+        $query=UserModel::where("username", $username);
         
         //return
         return optional(
-            optional($user->first())->makeVisible("password")
+            optional($query->first())->makeVisible("password")
         )->toArray();
     }
 
-    public static function get_user($user_id, $return_fields=["*"])
+    public static function get_user($user_id)
     {
         //query
-        $user=UserModel::select($return_fields)->with("region")
-            ->where("id_user", $user_id);
+        $query=UserModel::with("region")->where("id_user", $user_id);
         
         //return
-        return optional($user->first())->toArray();
+        return optional($query->first())->toArray();
     }
 
-    public static function gets_user($params, $return_fields=["*"])
+    public static function gets_user($params)
     {
         //params
         $params['per_page']=trim($params['per_page']);
@@ -38,24 +36,24 @@ class UserRepo{
         $params['status']=trim($params['status']);
 
         //query
-        $users=UserModel::select($return_fields)->with("region");
+        $query=UserModel::with("region");
         //--q
-        $users=$users->where(function($query) use($params){
+        $query=$query->where(function($query) use($params){
             $query->where("nama_lengkap", "like", "%".$params['q']."%")
                 ->orWhere("username", "like", "%".$params['q']."%");
         });
         //--role
         if($params['role']!=""){
-            $users=$users->where("role", $params['role']);
+            $query=$query->where("role", $params['role']);
         }
         //--status
         if($params['status']!=""){
-            $users=$users->where("status", $params['status']);
+            $query=$query->where("status", $params['status']);
         }
         //--order
-        $users=$users->orderByDesc("id_user");
+        $query=$query->orderByDesc("id_user");
 
         //return
-        return $users->paginate($params['per_page'])->toArray();
+        return $query->paginate($params['per_page'])->toArray();
     }
 }
