@@ -13,7 +13,16 @@ class RegionRepo{
         $params['per_page']=trim($params['per_page']);
 
         //query
-        $query=RegionModel::where("type", "kecamatan")
+        $query=RegionModel::query();
+        //--with desa
+        if($params['with_desa']){
+            $query=$query->with("desa");
+        }
+        //--with posyandu
+        if($params['with_posyandu']){
+            $query=$query->with("desa.posyandu");
+        }
+        $query=$query->where("type", "kecamatan")
             ->where("region", "like", "%".$params['q']."%")
             ->orderBy("region");
         

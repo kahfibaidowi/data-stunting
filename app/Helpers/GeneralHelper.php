@@ -93,3 +93,21 @@ function array_merge_without($array, $without=[], $merge=[])
 
     return array_merge($new_array, $merge);
 }
+function count_day($start, $end, $with_one=false)
+{
+    $time_start=strtotime($start);
+    $time_end=strtotime($end);
+    
+    return (($time_end-$time_start)/(24*3600))+($with_one?1:0);
+}
+function ceil_with_enclosure($number, $enclosure=0.5)
+{
+    $int=floor($number);
+
+    if($number<=$int+$enclosure){
+        return floor($number);
+    }
+    else{
+        return round($number);
+    }
+}

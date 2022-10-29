@@ -26,6 +26,10 @@ class RegionModel extends Model{
             ->orderBy("id_region");
     }
 
+    public function posyandu(){
+        return $this->hasMany(UserModel::class, "id_region");
+    }
+    
     public function parent(){
         return $this->belongsTo(RegionModel::class, "nested", "id_region");
     }

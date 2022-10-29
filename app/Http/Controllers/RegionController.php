@@ -81,7 +81,25 @@ class RegionController extends Controller
         $req['id_region']=$id;
         $validation=Validator::make($req, [
             'id_region' =>"required|exists:App\Models\RegionModel,id_region",
-            'region'    =>"required"
+            'region'    =>"required",
+            'nested'    =>[
+                Rule::requiredIf(function()use($req){
+                    $v=RegionModel::where("id_region", $req['id_region'])->first();
+
+                    if(is_null($v) || !isset($req['nested'])) return true;
+                    if($v['type']=="desa"&&trim($req['nested'])=="") return true;
+                    return false;
+                }),
+                function($attr, $value, $fail)use($req){
+                    $v=RegionModel::where("id_region", $req['id_region'])->first();
+
+                    if(is_null($v) || !isset($req['nested'])) return $fail("Nested error.");
+                    if($v['type']=="kecamatan"&&trim($req['nested'])!="") return $fail("Nested must empty.");
+                },
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q)use($req){
+                    return $q->where("type", "kecamatan");
+                })
+            ]
         ]);
         if($validation->fails()){
             return response()->json([
@@ -94,6 +112,7 @@ class RegionController extends Controller
         DB::transaction(function()use($req){
             RegionModel::where("id_region", $req['id_region'])
                 ->update([
+                    'nested'=>trim($req['nested'])!=""?$req['nested']:null,
                     'region'=>$req['region']
                 ]);
         });
@@ -159,7 +178,9 @@ class RegionController extends Controller
             ],
             'q'         =>[
                 Rule::requiredIf(!isset($req['q']))
-            ]
+            ],
+            'with_desa' =>"required|boolean",
+            'with_posyandu' =>"required|boolean"
         ]);
         if($validation->fails()){
             return response()->json([

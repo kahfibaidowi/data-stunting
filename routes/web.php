@@ -48,3 +48,19 @@ $router->group(['prefix'=>'/user_login', 'middleware'=>'auth'], function()use($r
     $router->delete("/{id}", ['uses'=>"UserLoginController@delete"]);
     $router->delete("/type/expired", ['uses'=>"UserLoginController@delete_expired"]);
 });
+
+//FILE
+$router->group(['prefix'=>'/file', 'middleware'=>'auth'], function()use($router){
+    $router->post("/upload", ['uses'=>"FileController@upload"]);
+    $router->post("/upload_avatar", ['uses'=>"FileController@upload_avatar"]);
+});
+$router->get("/file/show/{file}", ['uses'=>"FileController@show"]);
+
+//SKRINING BALITA
+$router->group(['prefix'=>'/skrining_balita', 'middleware'=>'auth'], function()use($router){
+    $router->get("/{id}", ['uses'=>"SkriningBalitaController@get"]);
+    $router->get("/", ['uses'=>"SkriningBalitaController@gets"]);
+    $router->post("/", ['uses'=>"SkriningBalitaController@add"]);
+    $router->delete("/{id}", ['uses'=>"SkriningBalitaController@delete"]);
+    $router->put("/{id}", ['uses'=>"SkriningBalitaController@update"]);
+});
