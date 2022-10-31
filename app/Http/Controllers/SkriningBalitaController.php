@@ -76,7 +76,13 @@ class SkriningBalitaController extends Controller
             ])['result']['kategori'];
             $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
                 'jenis_kelamin' =>"L",
-                'umur'  =>0,
+                'umur'  =>$umur,
+                'berat_badan'  =>$req['berat_badan']
+            ])['result']['kategori'];
+            $hasil_berat_badan_per_tinggi_badan=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
+                'jenis_kelamin' =>"L",
+                'umur'  =>$umur,
+                'tinggi_badan'  =>$req['tinggi_badan'],
                 'berat_badan'  =>$req['berat_badan']
             ])['result']['kategori'];
 
@@ -92,7 +98,7 @@ class SkriningBalitaController extends Controller
                 'tinggi_badan'  =>$req['tinggi_badan'],
                 'usia_saat_ukur'=>$usia_hari,
                 'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
-                'hasil_berat_badan_per_tinggi_badan'=>""
+                'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
             ]);
         });
 
@@ -143,7 +149,13 @@ class SkriningBalitaController extends Controller
             ])['result']['kategori'];
             $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
                 'jenis_kelamin' =>"L",
-                'umur'  =>0,
+                'umur'  =>$umur,
+                'berat_badan'  =>$req['berat_badan']
+            ])['result']['kategori'];
+            $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
+                'jenis_kelamin' =>"L",
+                'umur'  =>$umur,
+                'tinggi_badan'  =>$req['tinggi_badan'],
                 'berat_badan'  =>$req['berat_badan']
             ])['result']['kategori'];
 
@@ -155,7 +167,7 @@ class SkriningBalitaController extends Controller
                     'berat_badan'   =>$req['berat_badan'],
                     'tinggi_badan'  =>$req['tinggi_badan'],
                     'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
-                    'hasil_berat_badan_per_tinggi_badan'=>""
+                    'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
                 ]);
         });
 
