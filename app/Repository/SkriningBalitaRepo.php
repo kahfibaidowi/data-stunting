@@ -269,16 +269,16 @@ class SkriningBalitaRepo{
             }
         }
         
-        //tinggi badan
-        if((int)$data['tinggi_badan']+0.5==$data['tinggi_badan']){
-            $data['tinggi_badan']=$data['tinggi_badan'];
-        }
-        elseif($data['tinggi_badan']>(int)$data['tinggi_badan']+0.5 && $data['tinggi_badan']<(int)$data['tinggi_badan']+1){
-            $data['tinggi_badan']=(int)$data['tinggi_badan']+0.5;
-        }
-        else{
-            $data['tinggi_badan']=(int)$data['tinggi_badan'];
-        }
+        // //tinggi badan
+        // if((int)$data['tinggi_badan']+0.5==$data['tinggi_badan']){
+        //     $data['tinggi_badan']=$data['tinggi_badan'];
+        // }
+        // elseif($data['tinggi_badan']>(int)$data['tinggi_badan']+0.5 && $data['tinggi_badan']<(int)$data['tinggi_badan']+1){
+        //     $data['tinggi_badan']=(int)$data['tinggi_badan']+0.5;
+        // }
+        // else{
+        //     $data['tinggi_badan']=(int)$data['tinggi_badan'];
+        // }
 
         //hitung
         $search=array_find_by_key($table, "tinggi", $data['tinggi_badan']);
