@@ -250,16 +250,22 @@ class SkriningBalitaRepo{
             if($data['umur']<=24){
                 $table=SkriningBalitaRepo::table_bb_tb_024_laki_laki();
             }
-            else{
+            elseif($data['umur']<=60){
                 $table=SkriningBalitaRepo::table_bb_tb_2460_laki_laki();
+            }
+            else{
+                $table=[];
             }
         }
         else{
             if($data['umur']<=24){
                 $table=SkriningBalitaRepo::table_bb_tb_024_perempuan();
             }
-            else{
+            elseif($data['umur']<=60){
                 $table=SkriningBalitaRepo::table_bb_tb_2460_perempuan();
+            }
+            else{
+                $table=[];
             }
         }
         

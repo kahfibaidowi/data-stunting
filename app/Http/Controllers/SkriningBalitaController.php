@@ -46,12 +46,11 @@ class SkriningBalitaController extends Controller
             'data_anak.nik'         =>"required",
             'data_anak.tgl_lahir'   =>"required|date_format:Y-m-d",
             'data_anak.jenis_kelamin'=>"required|in:L,P",
-            'data_ibu'              =>"required",
-            'data_ibu.nik'          =>"required",
-            'data_ibu.jenis_kelamin'=>"required|in:P",
-            'data_ayah'     =>[
-                Rule::requiredIf(!isset($req['data_ayah']))
+            'data_anak.ibu'         =>"required",
+            'data_anak.ayah'        =>[
+                Rule::requiredIf(!isset($req['data_anak']['ayah']))
             ],
+            'umur'          =>"required|integer|min:0",
             'berat_badan_lahir' =>"required|numeric",
             'tinggi_badan_lahir'=>"required|numeric",
             'berat_badan'   =>"required|numeric",
@@ -67,21 +66,19 @@ class SkriningBalitaController extends Controller
         //SUCCESS
         DB::transaction(function()use($req){
             //params
-            $usia_hari=count_day($req['data_anak']['tgl_lahir'], date("Y-m-d"));
-            $umur=ceil_with_enclosure(($usia_hari/30), .7);
             $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
                 'jenis_kelamin' =>"L",
-                'umur'  =>$umur,
+                'umur'  =>$req['umur'],
                 'tinggi_badan'   =>$req['tinggi_badan']
             ])['result']['kategori'];
             $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
                 'jenis_kelamin' =>"L",
-                'umur'  =>$umur,
+                'umur'  =>$req['umur'],
                 'berat_badan'  =>$req['berat_badan']
             ])['result']['kategori'];
             $hasil_berat_badan_per_tinggi_badan=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
                 'jenis_kelamin' =>"L",
-                'umur'  =>$umur,
+                'umur'  =>$req['umur'],
                 'tinggi_badan'  =>$req['tinggi_badan'],
                 'berat_badan'  =>$req['berat_badan']
             ])['result']['kategori'];
@@ -90,13 +87,11 @@ class SkriningBalitaController extends Controller
             SkriningBalitaModel::create([
                 'id_user'   =>trim($req['id_user'])!=""?$req['id_user']:null,
                 'data_anak' =>$req['data_anak'],
-                'data_ibu'  =>$req['data_ibu'],
-                'data_ayah' =>!isset($req['data_ayah']['nik'])?(object)[]:$req['data_ayah'],
                 'berat_badan_lahir' =>$req['berat_badan_lahir'],
                 'tinggi_badan_lahir'=>$req['tinggi_badan_lahir'],
                 'berat_badan'   =>$req['berat_badan'],
                 'tinggi_badan'  =>$req['tinggi_badan'],
-                'usia_saat_ukur'=>$usia_hari,
+                'usia_saat_ukur'=>$req['umur'],
                 'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
                 'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
             ]);

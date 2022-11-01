@@ -17,8 +17,6 @@ return new class extends Migration
             $table->id("id_skrining_balita");
             $table->unsignedBigInteger("id_user")->nullable()->comment("user posyandu");
             $table->text("data_anak")->default("{}")->comment("diambil dari data-kependudukan");
-            $table->text("data_ayah")->default("{}")->comment("diambil dari data-kependudukan");
-            $table->text("data_ibu")->default("{}")->comment("diambil dari data-kependudukan");
             $table->double("berat_badan_lahir");
             $table->double("tinggi_badan_lahir");
             $table->integer("usia_saat_ukur");

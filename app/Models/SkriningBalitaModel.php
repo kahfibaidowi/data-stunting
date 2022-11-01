@@ -12,8 +12,6 @@ class SkriningBalitaModel extends Model{
     protected $fillable=[
         "id_user",
         "data_anak",
-        "data_ayah",
-        "data_ibu",
         "berat_badan_lahir",
         "tinggi_badan_lahir",
         "usia_saat_ukur",
@@ -23,9 +21,7 @@ class SkriningBalitaModel extends Model{
         "hasil_berat_badan_per_tinggi_badan"
     ];
     protected $casts=[
-        "data_anak" =>"array",
-        "data_ayah" =>"array",
-        "data_ibu"  =>"array"
+        "data_anak" =>"array"
     ];
 
 
