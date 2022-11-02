@@ -93,6 +93,7 @@ class SkriningBalitaController extends Controller
                 'tinggi_badan'  =>$req['tinggi_badan'],
                 'usia_saat_ukur'=>$req['umur'],
                 'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
+                'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
                 'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
             ]);
         });
@@ -135,8 +136,7 @@ class SkriningBalitaController extends Controller
             $skrining=SkriningBalitaRepo::get_skrining($req['id_skrining_balita']);
 
             //params
-            $usia_hari=$skrining['usia_saat_ukur'];
-            $umur=ceil_with_enclosure(($usia_hari/30), .7);
+            $umur=$skrining['usia_saat_ukur'];
             $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
                 'jenis_kelamin' =>"L",
                 'umur'  =>$umur,
@@ -162,6 +162,7 @@ class SkriningBalitaController extends Controller
                     'berat_badan'   =>$req['berat_badan'],
                     'tinggi_badan'  =>$req['tinggi_badan'],
                     'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
+                    'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
                     'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
                 ]);
         });

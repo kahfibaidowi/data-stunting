@@ -23,6 +23,7 @@ return new class extends Migration
             $table->double("berat_badan");
             $table->double("tinggi_badan");
             $table->text("hasil_tinggi_badan_per_umur");
+            $table->text("hasil_berat_badan_per_umur");
             $table->text("hasil_berat_badan_per_tinggi_badan");
             $table->timestamps();
 

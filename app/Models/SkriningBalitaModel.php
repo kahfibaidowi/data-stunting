@@ -18,6 +18,7 @@ class SkriningBalitaModel extends Model{
         "berat_badan",
         "tinggi_badan",
         "hasil_tinggi_badan_per_umur",
+        "hasil_berat_badan_per_umur",
         "hasil_berat_badan_per_tinggi_badan"
     ];
     protected $casts=[
