@@ -58,9 +58,9 @@ $router->get("/file/show/{file}", ['uses'=>"FileController@show"]);
 
 //SKRINING BALITA
 $router->group(['prefix'=>'/skrining_balita', 'middleware'=>'auth'], function()use($router){
-    $router->get("/{id}", ['uses'=>"SkriningBalitaController@get"]);
     $router->get("/", ['uses'=>"SkriningBalitaController@gets"]);
     $router->post("/", ['uses'=>"SkriningBalitaController@add"]);
     $router->delete("/{id}", ['uses'=>"SkriningBalitaController@delete"]);
     $router->put("/{id}", ['uses'=>"SkriningBalitaController@update"]);
 });
+$router->get("/skrining_balita/{id}", ['uses'=>"SkriningBalitaController@get"]);

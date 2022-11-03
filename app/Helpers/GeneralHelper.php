@@ -93,13 +93,6 @@ function array_merge_without($array, $without=[], $merge=[])
 
     return array_merge($new_array, $merge);
 }
-function count_day($start, $end, $with_one=false)
-{
-    $time_start=strtotime($start);
-    $time_end=strtotime($end);
-    
-    return (($time_end-$time_start)/(24*3600))+($with_one?1:0);
-}
 function ceil_with_enclosure($number, $enclosure=0.5)
 {
     $int=floor($number);
@@ -110,4 +103,28 @@ function ceil_with_enclosure($number, $enclosure=0.5)
     else{
         return round($number);
     }
+}
+function count_day($start, $end, $with_one=false)
+{
+    $time_start=strtotime($start);
+    $time_end=strtotime($end);
+    
+    return (($time_end-$time_start)/(24*3600))+($with_one?1:0);
+}
+function count_month($start, $end, $with_one=false){
+    $date1 =$start;
+    $date2=$end;
+    
+    $ts1=strtotime($date1);
+    $ts2=strtotime($date2);
+    
+    $year1=date('Y', $ts1);
+    $year2=date('Y', $ts2);
+    
+    $month1=date('m', $ts1);
+    $month2=date('m', $ts2);
+    
+    $diff=(($year2-$year1)*12)+($month2-$month1);
+    
+    return $with_one?$diff+1:$diff;
 }

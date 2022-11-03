@@ -50,7 +50,6 @@ class SkriningBalitaController extends Controller
             'data_anak.ayah'        =>[
                 Rule::requiredIf(!isset($req['data_anak']['ayah']))
             ],
-            'umur'          =>"required|integer|min:0",
             'berat_badan_lahir' =>"required|numeric",
             'tinggi_badan_lahir'=>"required|numeric",
             'berat_badan'   =>"required|numeric",
@@ -66,19 +65,20 @@ class SkriningBalitaController extends Controller
         //SUCCESS
         DB::transaction(function()use($req){
             //params
+            $umur=count_month($req['data_anak']['tgl_lahir'], date("Y-m-d"));
             $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
                 'jenis_kelamin' =>"L",
-                'umur'  =>$req['umur'],
+                'umur'          =>$umur,
                 'tinggi_badan'   =>$req['tinggi_badan']
             ])['result']['kategori'];
             $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
                 'jenis_kelamin' =>"L",
-                'umur'  =>$req['umur'],
+                'umur'  =>$umur,
                 'berat_badan'  =>$req['berat_badan']
             ])['result']['kategori'];
             $hasil_berat_badan_per_tinggi_badan=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
                 'jenis_kelamin' =>"L",
-                'umur'  =>$req['umur'],
+                'umur'  =>$umur,
                 'tinggi_badan'  =>$req['tinggi_badan'],
                 'berat_badan'  =>$req['berat_badan']
             ])['result']['kategori'];
@@ -91,7 +91,7 @@ class SkriningBalitaController extends Controller
                 'tinggi_badan_lahir'=>$req['tinggi_badan_lahir'],
                 'berat_badan'   =>$req['berat_badan'],
                 'tinggi_badan'  =>$req['tinggi_badan'],
-                'usia_saat_ukur'=>$req['umur'],
+                'usia_saat_ukur'=>$umur,
                 'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
                 'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
                 'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
@@ -208,7 +208,19 @@ class SkriningBalitaController extends Controller
 
     public function get(Request $request, $id)
     {
-        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        $type=isset($req['type'])?$req['type']:"";
+        if($type=="nik"){
+            return $this->get_by_nik($request, $id);
+        }
+        else{
+            return $this->get_by_id($request, $id);
+        }
+    }
+
+    private function get_by_id(Request $request, $id)
+    {
         $req=$request->all();
 
         //ROLE AUTHENTICATION
@@ -231,7 +243,47 @@ class SkriningBalitaController extends Controller
         }
 
         //SUCCESS
-        $skrining=SkriningBalitaRepo::get_skrining($req['id_skrining_balita']);
+        $skrining=SkriningBalitaRepo::get_skrining($req['id_skrining_balita'], "id_skrining_balita");
+
+        return response()->json([
+            'data'  =>$skrining
+        ]);
+    }
+
+    private function get_by_nik(Request $request, $id)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(false){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $req['nik']=$id;
+        $validation=Validator::make($req, [
+            'nik'=>[
+                "required",
+                function($attr, $value, $fail)use($req){
+                    $v=SkriningBalitaModel::where("data_anak->nik", $value)->first();
+
+                    if(is_null($v)) return $fail("Nik not found.");
+                    return true;
+                }
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()
+            ], 500);
+        }
+
+        //SUCCESS
+        $skrining=SkriningBalitaRepo::get_skrining($req['nik'], "data_anak->nik");
 
         return response()->json([
             'data'  =>$skrining

@@ -12,6 +12,7 @@ class SkriningBalitaRepo{
         //params
         $params['per_page']=trim($params['per_page']);
         $params['posyandu_id']=trim($params['posyandu_id']);
+        $params['nik']=trim($params['nik']);
 
         //query
         $query=SkriningBalitaModel::with("user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");
@@ -55,10 +56,10 @@ class SkriningBalitaRepo{
         ]);
     }
 
-    public static function get_skrining($skrining_id)
+    public static function get_skrining($skrining_id, $column)
     {
         //query
-        $query=SkriningBalitaModel::where("id_skrining_balita", $skrining_id);
+        $query=SkriningBalitaModel::where($column, $skrining_id);
 
         //return
         return optional($query->first())->toArray();
