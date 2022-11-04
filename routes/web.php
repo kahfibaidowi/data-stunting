@@ -17,6 +17,7 @@
 //AUTHENTICATION
 $router->group(['prefix'=>'/auth', 'middleware'=>'auth'], function()use($router){
     $router->get("/verify", ['uses'=>"AuthController@verify_login"]);
+    $router->get("/generate_kependudukan_system_token", ['uses'=>"AuthController@generate_kependudukan_system_token"]);
     $router->get("/profile", ['uses'=>"AuthController@get_profile"]);
     $router->put("/profile", ['uses'=>"AuthController@update_profile"]);
     $router->delete("/logout", ['uses'=>"AuthController@logout"]);
@@ -60,6 +61,7 @@ $router->get("/file/show/{file}", ['uses'=>"FileController@show"]);
 $router->group(['prefix'=>'/skrining_balita', 'middleware'=>'auth'], function()use($router){
     $router->get("/", ['uses'=>"SkriningBalitaController@gets"]);
     $router->post("/", ['uses'=>"SkriningBalitaController@add"]);
+    $router->post("/type/multiple", ['uses'=>"SkriningBalitaController@add_multiple"]);
     $router->delete("/{id}", ['uses'=>"SkriningBalitaController@delete"]);
     $router->put("/{id}", ['uses'=>"SkriningBalitaController@update"]);
 });

@@ -103,6 +103,99 @@ class SkriningBalitaController extends Controller
         ]);
     }
 
+    public function add_multiple(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'dinkes', 'posyandu'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'id_user'       =>[
+                Rule::requiredIf(function()use($req, $login_data){
+                    if(!isset($req['id_user'])) return true;
+                    if($login_data['role']=="posyandu" && trim($req['id_user'])=="") return true;
+                    return false;
+                }),
+                function($attr, $value, $fail)use($req, $login_data){
+                    if($login_data['role']=="posyandu"){
+                        if($login_data['id_user']!=$req['id_user']){
+                            return $fail("Id user error.");
+                        }
+                    }
+                    return true;
+                },
+                Rule::exists("App\Models\UserModel", "id_user")
+            ],
+            'skrining'              =>"required|array",
+            'skrining.*.data_anak'             =>"required|required_array_keys:ayah",
+            'skrining.*.data_anak.nik'         =>"required",
+            'skrining.*.data_anak.tgl_lahir'   =>"required|date_format:Y-m-d",
+            'skrining.*.data_anak.jenis_kelamin'=>"required|in:L,P",
+            'skrining.*.data_anak.ibu'         =>"required",
+            'skrining.*.berat_badan_lahir' =>"required|numeric",
+            'skrining.*.tinggi_badan_lahir'=>"required|numeric",
+            'skrining.*.berat_badan'   =>"required|numeric",
+            'skrining.*.tinggi_badan'  =>"required|numeric"
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()
+            ], 500);
+        }
+
+        //SUCCESS
+        DB::transaction(function()use($req){
+            $date=date("Y-m-d");
+
+            foreach($req['skrining'] as $val){
+                //params
+                $umur=count_month($val['data_anak']['tgl_lahir'], $date);
+                $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
+                    'jenis_kelamin' =>"L",
+                    'umur'          =>$umur,
+                    'tinggi_badan'   =>$val['tinggi_badan']
+                ])['result']['kategori'];
+                $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
+                    'jenis_kelamin' =>"L",
+                    'umur'  =>$umur,
+                    'berat_badan'  =>$val['berat_badan']
+                ])['result']['kategori'];
+                $hasil_berat_badan_per_tinggi_badan=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
+                    'jenis_kelamin' =>"L",
+                    'umur'  =>$umur,
+                    'tinggi_badan'  =>$val['tinggi_badan'],
+                    'berat_badan'  =>$val['berat_badan']
+                ])['result']['kategori'];
+
+                //update
+                SkriningBalitaModel::create([
+                    'id_user'   =>trim($req['id_user'])!=""?$req['id_user']:null,
+                    'data_anak' =>$val['data_anak'],
+                    'berat_badan_lahir' =>$val['berat_badan_lahir'],
+                    'tinggi_badan_lahir'=>$val['tinggi_badan_lahir'],
+                    'berat_badan'   =>$val['berat_badan'],
+                    'tinggi_badan'  =>$val['tinggi_badan'],
+                    'usia_saat_ukur'=>$umur,
+                    'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
+                    'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
+                    'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
+                ]);
+            }
+        });
+
+        return response()->json([
+            'status'=>"ok"
+        ]);
+    }
+
     public function update(Request $request, $id)
     {
         $login_data=$request['fm__login_data'];

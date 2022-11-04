@@ -179,4 +179,26 @@ class AuthController extends Controller
             'status'=>"ok"
         ], 401);
     }
+
+    //GENERATE SYSTEM TOKEN
+    public function generate_kependudukan_system_token(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //token
+        $expired=60;
+        $time=time();
+        $token=[
+            'iat'   =>$time,
+            'nbf'   =>$time,
+            'exp'   =>$time+$expired,
+            'uid'   =>""
+        ];
+        $generated_token=JWT::encode($token, env("JWT_SECRET_KEPENDUDUKAN_SYSTEM"), env("JWT_ALGORITM"));
+
+        return response()->json([
+            'data'  =>$generated_token
+        ]);
+    }
 }
