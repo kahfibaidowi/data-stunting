@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger("nested")->nullable()->comment("turunan id_region");
             $table->text("type");
             $table->text("region");
+            $table->longText("data");
             $table->timestamps();
 
             //fk

@@ -12,7 +12,11 @@ class RegionModel extends Model{
     protected $fillable=[
         "nested",
         "type",
-        "region"
+        "region",
+        "data"
+    ];
+    protected $casts=[
+        "data"=>"array"
     ];
 
 

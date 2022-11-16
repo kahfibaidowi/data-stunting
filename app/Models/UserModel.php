@@ -33,4 +33,8 @@ class UserModel extends Model{
     public function region(){
         return $this->belongsTo(RegionModel::class, "id_region");
     }
+
+    public function skrining_balita(){
+        return $this->hasMany(SkriningBalitaModel::class, "id_user");
+    }
 }

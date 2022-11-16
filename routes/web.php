@@ -64,5 +64,10 @@ $router->group(['prefix'=>'/skrining_balita', 'middleware'=>'auth'], function()u
     $router->post("/type/multiple", ['uses'=>"SkriningBalitaController@add_multiple"]);
     $router->delete("/{id}", ['uses'=>"SkriningBalitaController@delete"]);
     $router->put("/{id}", ['uses'=>"SkriningBalitaController@update"]);
+    $router->get("/{id}", ['uses'=>"SkriningBalitaController@get"]);
 });
-$router->get("/skrining_balita/{id}", ['uses'=>"SkriningBalitaController@get"]);
+
+//STUNTING
+$router->group(['prefix'=>'/stunting', 'middleware'=>'auth'], function()use($router){
+    $router->get("/", ['uses'=>"StuntingController@gets_stunting_by_region"]);
+});

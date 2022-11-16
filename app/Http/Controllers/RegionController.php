@@ -43,6 +43,22 @@ class RegionController extends Controller
             ],
             'type'      =>"required|in:kecamatan,desa",
             'region'    =>"required",
+            'geo_json'  =>[
+                Rule::requiredIf(!isset($req['geo_json']))
+            ],
+            'map_center'=>[
+                Rule::requiredIf(!isset($req['map_center']))
+            ],
+            'map_center.latitude'   =>[
+                Rule::requiredIf(!isset($req['map_center']['latitude']))
+            ],
+            'map_center.longitude'  =>[
+                Rule::requiredIf(!isset($req['map_center']['longitude']))
+            ],
+            'map_center.zoom'       =>[
+                Rule::requiredIf(!isset($req['map_center']['zoom'])),
+                "numeric"
+            ]
         ]);
         if($validation->fails()){
             return response()->json([
@@ -56,7 +72,11 @@ class RegionController extends Controller
             RegionModel::create([
                 'nested'=>trim($req['nested'])!=""?$req['nested']:null,
                 'type'  =>$req['type'],
-                'region'=>$req['region']
+                'region'=>$req['region'],
+                'data'  =>[
+                    'geo_json'  =>count($req['geo_json'])==0?(object)[]:$req['geo_json'],
+                    'map_center'=>$req['map_center']
+                ]
             ]);
         });
 
@@ -99,6 +119,22 @@ class RegionController extends Controller
                 Rule::exists("App\Models\RegionModel", "id_region")->where(function($q)use($req){
                     return $q->where("type", "kecamatan");
                 })
+            ],
+            'geo_json'  =>[
+                Rule::requiredIf(!isset($req['geo_json']))
+            ],
+            'map_center'=>[
+                Rule::requiredIf(!isset($req['map_center']))
+            ],
+            'map_center.latitude'   =>[
+                Rule::requiredIf(!isset($req['map_center']['latitude']))
+            ],
+            'map_center.longitude'  =>[
+                Rule::requiredIf(!isset($req['map_center']['longitude']))
+            ],
+            'map_center.zoom'       =>[
+                Rule::requiredIf(!isset($req['map_center']['zoom'])),
+                "numeric"
             ]
         ]);
         if($validation->fails()){
@@ -113,7 +149,11 @@ class RegionController extends Controller
             RegionModel::where("id_region", $req['id_region'])
                 ->update([
                     'nested'=>trim($req['nested'])!=""?$req['nested']:null,
-                    'region'=>$req['region']
+                    'region'=>$req['region'],
+                    'data'  =>[
+                        'geo_json'  =>count($req['geo_json'])==0?(object)[]:$req['geo_json'],
+                        'map_center'=>$req['map_center']
+                    ]
                 ]);
         });
 
