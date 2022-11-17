@@ -37,4 +37,12 @@ class RegionModel extends Model{
     public function parent(){
         return $this->belongsTo(RegionModel::class, "nested", "id_region");
     }
+
+    public function skrining_balita_kecamatan(){
+        return $this->hasMany(SkriningBalitaModel::class, "id_kecamatan", "id_region");
+    }
+
+    public function skrining_balita_desa(){
+        return $this->hasMany(SkriningBalitaModel::class, "id_desa", "id_region");
+    }
 }

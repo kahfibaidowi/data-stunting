@@ -25,10 +25,7 @@ return new class extends Migration
             $table->timestamps();
             
             //fk
-            $table->foreign("id_region")
-                ->references("id_region")
-                ->on("tbl_region")
-                ->onDelete("cascade");
+            $table->foreign("id_region")->references("id_region")->on("tbl_region")->onDelete("cascade");
         });
     }
 

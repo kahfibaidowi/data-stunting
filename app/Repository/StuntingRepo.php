@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+
 use App\Models\SkriningBalitaModel;
 use App\Models\RegionModel;
 
@@ -17,8 +18,12 @@ class StuntingRepo{
         //--count stunting
         $query=RegionModel::with(["posyandu"=>function($q){
             return $q->withCount(["skrining_balita as count_stunting"=>function($q2){
-                return $q2->whereIn("hasil_tinggi_badan_per_umur", ["sangat_pendek", "pendek"]);
+                
             }]);
+        }]);
+        $query=RegionModel::withCount(['skrining_balita_desa as count_stunting'=>function($q){
+            return $q->select(\DB::raw("count(distinct(json_unquote(json_extract(`data_anak`, '$.nik'))))"))
+                ->whereIn("hasil_tinggi_badan_per_umur", ["sangat_pendek", "pendek"]);
         }]);
         //--district
         if($params['district_id']!=""){
@@ -29,23 +34,8 @@ class StuntingRepo{
             ->where("region", "like", "%".$params['q']."%")
             ->orderBy("region");
 
-        //data
-        $data=$query->get()->toArray();
-
-        $new_data=[];
-        foreach($data as $val){
-            $count_stunting=0;
-            foreach($val['posyandu'] as $posy){
-                $count_stunting+=$posy['count_stunting'];
-            }
-
-            $new_data[]=array_merge_without($val, ['posyandu'], [
-                'count_stunting'=>$count_stunting
-            ]);
-        }
-
         //return
-        return $new_data;
+        return $query->get()->toArray();
     }
 
     public static function gets_stunting_by_region_kecamatan($params)
@@ -55,12 +45,9 @@ class StuntingRepo{
 
         //query
         //--count stunting
-        $query=RegionModel::with(['desa'=>function($qq){
-            return $qq->with(["posyandu"=>function($q){
-                return $q->withCount(["skrining_balita as count_stunting"=>function($q2){
-                    return $q2->whereIn("hasil_tinggi_badan_per_umur", ["sangat_pendek", "pendek"]);
-                }]);
-            }]);
+        $query=RegionModel::withCount(['skrining_balita_kecamatan as count_stunting'=>function($q){
+            return $q->select(\DB::raw("count(distinct(json_unquote(json_extract(`data_anak`, '$.nik'))))"))
+                ->whereIn("hasil_tinggi_badan_per_umur", ["sangat_pendek", "pendek"]);
         }]);
         //--district
         if($params['district_id']!=""){
@@ -71,27 +58,8 @@ class StuntingRepo{
             ->where("region", "like", "%".$params['q']."%")
             ->orderBy("region");
 
-        //data
-        $data=$query->get()->toArray();
-
-        $new_data=[];
-        foreach($data as $val){
-            $count_stunting=0;
-            foreach($val['desa'] as $desa){
-                foreach($desa['posyandu'] as $posy){
-                    $count_stunting+=$posy['count_stunting'];
-                }
-            }
-
-            $new_data[]=array_merge_without($val, ['desa'], [
-                'count_stunting'=>$count_stunting
-            ]);
-
-
-        }
-
         //return
-        return $new_data;
+        return $query->get()->toArray();
     }
 
     public static function get_region_center($district_id)

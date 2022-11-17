@@ -16,6 +16,8 @@ return new class extends Migration
         Schema::create('tbl_skrining_balita', function (Blueprint $table) {
             $table->id("id_skrining_balita");
             $table->unsignedBigInteger("id_user")->nullable()->comment("user posyandu");
+            $table->unsignedBigInteger("id_kecamatan")->nullable();
+            $table->unsignedBigInteger("id_desa")->nullable();
             $table->text("data_anak")->default("{}")->comment("diambil dari data-kependudukan");
             $table->double("berat_badan_lahir");
             $table->double("tinggi_badan_lahir");
@@ -29,10 +31,9 @@ return new class extends Migration
 
             
             //fk
-            $table->foreign("id_user")
-                ->references("id_user")
-                ->on("tbl_users")
-                ->onDelete("cascade");
+            $table->foreign("id_user")->references("id_user")->on("tbl_users")->onDelete("cascade");
+            $table->foreign("id_kecamatan")->references("id_region")->on("tbl_region")->onDelete("cascade");
+            $table->foreign("id_desa")->references("id_region")->on("tbl_region")->onDelete("cascade");
         });
     }
 
