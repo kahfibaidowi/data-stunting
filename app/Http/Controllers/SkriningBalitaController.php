@@ -84,14 +84,9 @@ class SkriningBalitaController extends Controller
                 'berat_badan'  =>$req['berat_badan']
             ])['result']['kategori'];
 
-            //region
-            $region=UserModel::with("region")->where("id_user", $req['id_user'])->first();
-
             //create
             SkriningBalitaModel::create([
                 'id_user'   =>trim($req['id_user'])!=""?$req['id_user']:null,
-                'id_kecamatan'  =>!is_null($region)?$region['region']['nested']:null,
-                'id_desa'       =>!is_null($region)?$region['region']['id_region']:null,
                 'data_anak' =>$req['data_anak'],
                 'berat_badan_lahir' =>$req['berat_badan_lahir'],
                 'tinggi_badan_lahir'=>$req['tinggi_badan_lahir'],
@@ -181,14 +176,9 @@ class SkriningBalitaController extends Controller
                     'berat_badan'  =>$val['berat_badan']
                 ])['result']['kategori'];
 
-                //region
-                $region=UserModel::with("region")->where("id_user", $req['id_user'])->first();
-
                 //update
                 SkriningBalitaModel::create([
                     'id_user'   =>trim($req['id_user'])!=""?$req['id_user']:null,
-                    'id_kecamatan'  =>!is_null($region)?$region['region']['nested']:null,
-                    'id_desa'       =>!is_null($region)?$region['region']['id_region']:null,
                     'data_anak' =>$val['data_anak'],
                     'berat_badan_lahir' =>$val['berat_badan_lahir'],
                     'tinggi_badan_lahir'=>$val['tinggi_badan_lahir'],

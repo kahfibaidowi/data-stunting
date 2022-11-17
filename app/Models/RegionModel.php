@@ -28,9 +28,7 @@ class RegionModel extends Model{
      *
      */
     public function desa(){
-        return $this->hasMany(RegionModel::class, "nested", "id_region")
-            ->where("type", "desa")
-            ->orderBy("id_region");
+        return $this->hasMany(RegionModel::class, "nested", "id_region")->where("type", "desa")->orderBy("id_region");
     }
 
     public function posyandu(){

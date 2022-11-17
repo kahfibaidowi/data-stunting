@@ -11,8 +11,6 @@ class SkriningBalitaModel extends Model{
     protected $primaryKey="id_skrining_balita";
     protected $fillable=[
         "id_user",
-        "id_kecamatan",
-        "id_desa",
         "data_anak",
         "berat_badan_lahir",
         "tinggi_badan_lahir",
