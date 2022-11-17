@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class RegionModel extends Model{
 
+    use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
+    use \Staudenmeir\EloquentHasManyDeep\HasTableAlias;
+
     protected $table="tbl_region";
     protected $primaryKey="id_region";
     protected $fillable=[
@@ -39,10 +42,30 @@ class RegionModel extends Model{
     }
 
     public function skrining_balita_kecamatan(){
-        return $this->hasMany(SkriningBalitaModel::class, "id_kecamatan", "id_region");
+        return $this->hasManyDeep(
+            SkriningBalitaModel::class,
+            [RegionModel::class, UserModel::class],
+            [
+                'nested',
+                'id_region',
+                'id_user'
+            ],
+            [
+                'id_region',
+                'id_region',
+                'id_user'
+            ]
+        );
     }
 
     public function skrining_balita_desa(){
-        return $this->hasMany(SkriningBalitaModel::class, "id_desa", "id_region");
+        return $this->hasManyThrough(
+            SkriningBalitaModel::class,
+            UserModel::class,
+            'id_region',
+            'id_user',
+            'id_region',
+            'id_user'
+        );
     }
 }
