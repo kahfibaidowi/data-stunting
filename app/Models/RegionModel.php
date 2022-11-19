@@ -21,6 +21,7 @@ class RegionModel extends Model{
     protected $casts=[
         "data"=>"array"
     ];
+    protected $perPage=99999999999999999999;
 
 
     /*

@@ -16,11 +16,6 @@ class StuntingRepo{
 
         //query
         //--count stunting
-        $query=RegionModel::with(["posyandu"=>function($q){
-            return $q->withCount(["skrining_balita as count_stunting"=>function($q2){
-                
-            }]);
-        }]);
         $query=RegionModel::withCount(['skrining_balita_desa as count_stunting'=>function($q){
             return $q->select(\DB::raw("count(distinct(json_unquote(json_extract(`data_anak`, '$.nik'))))"))
                 ->whereIn("hasil_tinggi_badan_per_umur", ["sangat_pendek", "pendek"]);

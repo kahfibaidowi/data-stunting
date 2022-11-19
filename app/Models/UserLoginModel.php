@@ -17,6 +17,7 @@ class UserLoginModel extends Model{
         'device_info'
     ];
     protected $hidden=['login_token'];
+    protected $perPage=99999999999999999999;
 
     protected $appends=['expired'];
 

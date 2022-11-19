@@ -24,6 +24,7 @@ class SkriningBalitaModel extends Model{
     protected $casts=[
         "data_anak" =>"array"
     ];
+    protected $perPage=99999999999999999999;
 
 
     /*

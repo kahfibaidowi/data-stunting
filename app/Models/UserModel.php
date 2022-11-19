@@ -20,6 +20,7 @@ class UserModel extends Model{
         "status"
     ];
     protected $hidden=['password'];
+    protected $perPage=99999999999999999999;
 
 
     /*
