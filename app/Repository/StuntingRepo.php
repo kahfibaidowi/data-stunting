@@ -17,8 +17,9 @@ class StuntingRepo{
         //query
         //--count stunting
         $query=RegionModel::withCount(['skrining_balita_desa as count_stunting'=>function($q){
-            return $q->select(\DB::raw("count(distinct(json_unquote(json_extract(`data_anak`, '$.nik'))))"))
-                ->whereIn("hasil_tinggi_badan_per_umur", ["sangat_pendek", "pendek"]);
+            return $q->whereIn("id_skrining_balita", function($sq){
+                $sq->select(\DB::raw("max(id_skrining_balita) as last_update_id FROM `tbl_skrining_balita` group by json_unquote(json_extract(`data_anak`, '$.nik')) having SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_tinggi_badan_per_umur)), 21) in ('pendek', 'sangat_pendek')"));
+            });
         }]);
         //--district
         if($params['district_id']!=""){
@@ -41,8 +42,9 @@ class StuntingRepo{
         //query
         //--count stunting
         $query=RegionModel::withCount(["skrining_balita_kecamatan as count_stunting"=>function($q){
-            return $q->select(\DB::raw("count(distinct(json_unquote(json_extract(`data_anak`, '$.nik'))))"))
-                ->whereIn("hasil_tinggi_badan_per_umur", ["sangat_pendek", "pendek"]);
+            return $q->whereIn("id_skrining_balita", function($sq){
+                $sq->select(\DB::raw("max(id_skrining_balita) as last_update_id FROM `tbl_skrining_balita` group by json_unquote(json_extract(`data_anak`, '$.nik')) having SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_tinggi_badan_per_umur)), 21) in ('pendek', 'sangat_pendek')"));
+            });
         }]);
         //--district
         if($params['district_id']!=""){

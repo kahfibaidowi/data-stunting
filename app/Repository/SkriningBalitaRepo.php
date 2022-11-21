@@ -12,7 +12,6 @@ class SkriningBalitaRepo{
         //params
         $params['per_page']=trim($params['per_page']);
         $params['posyandu_id']=trim($params['posyandu_id']);
-        $params['nik']=trim($params['nik']);
 
         //query
         $query=SkriningBalitaModel::with("user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");

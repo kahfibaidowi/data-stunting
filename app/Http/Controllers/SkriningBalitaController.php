@@ -437,49 +437,4 @@ class SkriningBalitaController extends Controller
             'data'          =>$skrining['data']
         ]);
     }
-
-    public function gets_stunting_by_region(Request $request)
-    {
-        $login_data=$request['fm__login_data'];
-        $req=$request->all();
-
-        //ROLE AUTHENTICATION
-        if(false){
-            return response()->json([
-                'error' =>"ACCESS_NOT_ALLOWED"
-            ], 403);
-        }
-
-        //VALIDATION
-        $validation=Validator::make($req, [
-            'per_page'  =>[
-                Rule::requiredIf(!isset($req['per_page'])),
-                'integer',
-                'min:1'
-            ],
-            'q'         =>[
-                Rule::requiredIf(!isset($req['q']))
-            ],
-            'type'      =>"required|in:kecamatan,desa",
-            'district_id'=>[
-                Rule::requiredIf(!isset($req['district_id'])),
-                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q)use($req){
-                    return $q->where("type", "kecamatan");
-                })
-            ]
-        ]);
-        if($validation->fails()){
-            return response()->json([
-                'error' =>"VALIDATION_ERROR",
-                'data'  =>$validation->errors()
-            ], 500);
-        }
-
-        //SUCCESS
-        $stunting=SkriningBalitaRepo::gets_stunting_by_region($req);
-
-        return response()->json([
-            'data'  =>$stunting
-        ]);
-    }
 }
