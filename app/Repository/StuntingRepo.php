@@ -78,7 +78,7 @@ class StuntingRepo{
         return [
             'latitude'  =>'-7.61351',
             'longitude' =>'111.63688',
-            'zoom'      =>'12'
+            'zoom'      =>'11'
         ];
     }
 }
