@@ -55,4 +55,58 @@ class StuntingController extends Controller
             'center'=>$center
         ]);
     }
+
+    public function gets_stunting(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(false){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>[
+                Rule::requiredIf(!isset($req['per_page'])),
+                'integer',
+                'min:1'
+            ],
+            'q'         =>[
+                Rule::requiredIf(!isset($req['q']))
+            ],
+            'posyandu_id'   =>[
+                Rule::requiredIf(function()use($req, $login_data){
+                    if(!isset($req['posyandu_id'])) return true;
+                    if($login_data['role']=="posyandu") return true;
+                    return false;
+                }),
+                function($attr, $value, $fail)use($req, $login_data){
+                    if(!isset($req['posyandu_id'])) return $fail("Posyandu id error.");
+                    if($req['posyandu_id']!=$login_data['id_user']&&$login_data['role']=="posyandu") return $fail("Posyandu id error.");
+                    return true;
+                },
+                Rule::exists("App\Models\UserModel", "id_user")
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()
+            ], 500);
+        }
+
+        //SUCCESS
+        $stunting=StuntingRepo::gets_stunting($req);
+
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$stunting['current_page'],
+            'last_page'     =>$stunting['last_page'],
+            'data'          =>$stunting['data']
+        ]);
+    }
 }

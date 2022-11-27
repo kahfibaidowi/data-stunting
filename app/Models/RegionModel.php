@@ -35,6 +35,17 @@ class RegionModel extends Model{
     public function posyandu(){
         return $this->hasMany(UserModel::class, "id_region");
     }
+
+    public function posyandu_kecamatan(){
+        return $this->hasManyThrough(
+            UserModel::class,
+            RegionModel::class,
+            "nested",
+            "id_region",
+            "id_region",
+            "id_region"
+        );
+    }
     
     public function parent(){
         return $this->belongsTo(RegionModel::class, "nested", "id_region");
@@ -66,5 +77,9 @@ class RegionModel extends Model{
             'id_region',
             'id_user'
         );
+    }
+
+    public function stunting_4118_kecamatan(){
+        return $this->hasMany(Stunting4118Model::class, "id_kecamatan", "id_region");
     }
 }

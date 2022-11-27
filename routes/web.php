@@ -69,5 +69,13 @@ $router->group(['prefix'=>'/skrining_balita', 'middleware'=>'auth'], function()u
 
 //STUNTING
 $router->group(['prefix'=>'/stunting', 'middleware'=>'auth'], function()use($router){
-    $router->get("/", ['uses'=>"StuntingController@gets_stunting_by_region"]);
+    $router->get("/summary_region", ['uses'=>"StuntingController@gets_stunting_by_region"]);
+    $router->get("/", ['uses'=>"StuntingController@gets_stunting"]);
+});
+
+//STUNTING 4118
+$router->group(['prefix'=>'/stunting_4118', 'middleware'=>'auth'], function()use($router){
+    $router->post("/type/multiple", ['uses'=>"Stunting4118Controller@add_multiple"]);
+    $router->get("/", ['uses'=>"Stunting4118Controller@gets"]);
+    $router->get("/summary_kecamatan", ['uses'=>"Stunting4118Controller@gets_stunting_by_kecamatan"]);
 });
