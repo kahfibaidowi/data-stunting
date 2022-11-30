@@ -36,4 +36,8 @@ class Stunting4118Model extends Model{
         return $this->belongsTo(UserModel::class, "id_user")
             ->where("role", "posyandu");
     }
+    public function kecamatan(){
+        return $this->belongsTo(RegionModel::class, "id_kecamatan", "id_region")
+            ->where("type", "kecamatan");
+    }
 }

@@ -16,7 +16,7 @@ class Stunting4118Repo{
         $params['district_id']=trim($params['district_id']);
 
         //query
-        $query=Stunting4118Model::with("user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");
+        $query=Stunting4118Model::with("kecamatan", "user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");
         //--district id
         if($params['district_id']!=""){
             $query=$query->where("id_kecamatan", $params['district_id']);

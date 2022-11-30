@@ -45,7 +45,7 @@ class UserController extends Controller
             'username'      =>"required|unique:App\Models\UserModel,username",
             'nama_lengkap'  =>"required",
             'password'      =>"required|min:5",
-            'role'          =>"required|in:admin,dinkes,posyandu",
+            'role'          =>"required|in:admin,dinkes,posyandu,dinas",
             "avatar_url"    =>[
                 Rule::requiredIf(!isset($req['avatar_url']))
             ],
@@ -204,7 +204,7 @@ class UserController extends Controller
             ],
             'role'      =>[
                 Rule::requiredIf(!isset($req['role'])),
-                Rule::in(['admin', 'dinkes', "posyandu"]),
+                Rule::in(['admin', 'dinkes', "posyandu", "dinas"]),
             ],
             'status'    =>[
                 Rule::requiredIf(!isset($req['status'])),

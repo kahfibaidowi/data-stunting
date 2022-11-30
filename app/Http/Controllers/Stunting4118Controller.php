@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
 use App\Models\Stunting4118Model;
 use App\Models\UserModel;
 use App\Repository\Stunting4118Repo;
+use App\Repository\SkriningBalitaRepo;
 
 class Stunting4118Controller extends Controller
 {
@@ -34,6 +35,7 @@ class Stunting4118Controller extends Controller
                 })
             ],
             'skrining'              =>"required|array",
+            'skrining.*'            =>"required|required_array_keys:usia_saat_ukur,berat_badan_lahir,tinggi_badan_lahir,berat_badan,tinggi_badan",
             'skrining.*.data_anak'             =>"required|required_array_keys:ayah,ibu",
             'skrining.*.data_anak.nik'         =>"required",
             'skrining.*.data_anak.tgl_lahir'   =>"required|date_format:Y-m-d",
@@ -52,22 +54,56 @@ class Stunting4118Controller extends Controller
 
             foreach($req['skrining'] as $val){
                 //params
-                //$umur=count_month($val['data_anak']['tgl_lahir'], $date);
+                $umur=$val['usia_saat_ukur'];
+                $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
+                    'jenis_kelamin' =>"L",
+                    'umur'          =>$umur,
+                    'tinggi_badan'   =>$val['tinggi_badan']
+                ])['result']['kategori'];
+                $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
+                    'jenis_kelamin' =>"L",
+                    'umur'  =>$umur,
+                    'berat_badan'  =>$val['berat_badan']
+                ])['result']['kategori'];
+                $hasil_berat_badan_per_tinggi_badan=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
+                    'jenis_kelamin' =>"L",
+                    'umur'  =>$umur,
+                    'tinggi_badan'  =>$val['tinggi_badan'],
+                    'berat_badan'  =>$val['berat_badan']
+                ])['result']['kategori'];
 
                 //update
-                Stunting4118Model::create([
-                    'id_user'   =>null,
-                    'id_kecamatan'  =>$req['id_kecamatan'],
-                    'data_anak' =>$val['data_anak'],
-                    'berat_badan_lahir' =>null,
-                    'tinggi_badan_lahir'=>null,
-                    'berat_badan'   =>null,
-                    'tinggi_badan'  =>null,
-                    'usia_saat_ukur'=>null,
-                    'hasil_tinggi_badan_per_umur'       =>"",
-                    'hasil_berat_badan_per_umur'        =>"",
-                    'hasil_berat_badan_per_tinggi_badan'=>""
-                ]);
+                $data_anak=Stunting4118Model::where("data_anak->nik", $val['data_anak']['nik'])->lockForUpdate()->first();
+                if(!is_null($data_anak)){
+                    $data_anak->update([
+                        'id_user'   =>null,
+                        'id_kecamatan'  =>$req['id_kecamatan'],
+                        'data_anak' =>$val['data_anak'],
+                        'berat_badan_lahir' =>trim($val['berat_badan_lahir'])!=""?$val['berat_badan_lahir']:null,
+                        'tinggi_badan_lahir'=>trim($val['tinggi_badan_lahir'])!=""?$val['tinggi_badan_lahir']:null,
+                        'berat_badan'   =>trim($val['berat_badan'])!=""?$val['berat_badan']:null,
+                        'tinggi_badan'  =>trim($val['tinggi_badan'])!=""?$val['tinggi_badan']:null,
+                        'usia_saat_ukur'=>trim($val['usia_saat_ukur'])!=""?$val['usia_saat_ukur']:null,
+                        'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
+                        'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
+                        'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
+                    ]);
+                }
+                else{
+                    Stunting4118Model::create([
+                        'id_user'   =>null,
+                        'id_kecamatan'  =>$req['id_kecamatan'],
+                        'data_anak' =>$val['data_anak'],
+                        'berat_badan_lahir' =>$val['berat_badan_lahir'],
+                        'tinggi_badan_lahir'=>$val['tinggi_badan_lahir'],
+                        'berat_badan'   =>$val['berat_badan'],
+                        'tinggi_badan'  =>$val['tinggi_badan'],
+                        'usia_saat_ukur'=>$val['usia_saat_ukur'],
+                        'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
+                        'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
+                        'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
+                    ]);
+                }
             }
         });
 
