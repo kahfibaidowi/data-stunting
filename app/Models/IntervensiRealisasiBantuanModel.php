@@ -12,7 +12,8 @@ class IntervensiRealisasiBantuanModel extends Model{
     protected $fillable=[
         "id_skrining_balita",
         "id_rencana_bantuan",
-        "nominal"
+        "nominal",
+        "dokumen"
     ];
     protected $perPage=99999999999999999999;
 

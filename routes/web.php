@@ -79,3 +79,31 @@ $router->group(['prefix'=>'/stunting_4118', 'middleware'=>'auth'], function()use
     $router->get("/", ['uses'=>"Stunting4118Controller@gets"]);
     $router->get("/summary_kecamatan", ['uses'=>"Stunting4118Controller@gets_stunting_by_kecamatan"]);
 });
+
+//INTERVENSI RENCANA KEGIATAN
+$router->group(['prefix'=>'/intervensi_rencana_kegiatan', 'middleware'=>'auth'], function()use($router){
+    $router->post("/", ['uses'=>"IntervensiRencanaKegiatanController@add"]);
+    $router->put("/{id}", ['uses'=>"IntervensiRencanaKegiatanController@update"]);
+    $router->delete("/{id}", ['uses'=>"IntervensiRencanaKegiatanController@delete"]);
+    $router->get("/{id}", ['uses'=>"IntervensiRencanaKegiatanController@get"]);
+    $router->get("/", ['uses'=>"IntervensiRencanaKegiatanController@gets"]);
+});
+
+
+//INTERVENSI RENCANA BANTUAN
+$router->group(['prefix'=>'/intervensi_rencana_bantuan', 'middleware'=>'auth'], function()use($router){
+    $router->post("/", ['uses'=>"IntervensiRencanaBantuanController@add"]);
+    $router->put("/{id}", ['uses'=>"IntervensiRencanaBantuanController@update"]);
+    $router->delete("/{id}", ['uses'=>"IntervensiRencanaBantuanController@delete"]);
+    $router->get("/{id}", ['uses'=>"IntervensiRencanaBantuanController@get"]);
+    $router->get("/", ['uses'=>"IntervensiRencanaBantuanController@gets"]);
+});
+
+//INTERVENSI REALISASI BANTUAN
+$router->group(['prefix'=>'/intervensi_realisasi_bantuan', 'middleware'=>'auth'], function()use($router){
+    $router->post("/", ['uses'=>"IntervensiRealisasiBantuanController@add"]);
+    $router->put("/{id}", ['uses'=>"IntervensiRealisasiBantuanController@update"]);
+    $router->delete("/{id}", ['uses'=>"IntervensiRealisasiBantuanController@delete"]);
+    $router->get("/{id}", ['uses'=>"IntervensiRealisasiBantuanController@get"]);
+    $router->get("/", ['uses'=>"IntervensiRealisasiBantuanController@gets"]);
+});

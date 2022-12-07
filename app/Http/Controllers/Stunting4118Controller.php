@@ -20,7 +20,7 @@ class Stunting4118Controller extends Controller
         $req=$request->all();
 
         //ROLE AUTHENTICATION
-        if(!in_array($login_data['role'], ['admin', 'dinkes'])){
+        if(!in_array($login_data['role'], ['admin', 'dinkes', 'dinas'])){
             return response()->json([
                 'error' =>"ACCESS_NOT_ALLOWED"
             ], 403);
@@ -35,7 +35,7 @@ class Stunting4118Controller extends Controller
                 })
             ],
             'skrining'              =>"required|array",
-            'skrining.*'            =>"required|required_array_keys:usia_saat_ukur,berat_badan_lahir,tinggi_badan_lahir,berat_badan,tinggi_badan",
+            'skrining.*'            =>"required|required_array_keys:berat_badan_lahir,tinggi_badan_lahir,berat_badan,tinggi_badan",
             'skrining.*.data_anak'             =>"required|required_array_keys:ayah,ibu",
             'skrining.*.data_anak.nik'         =>"required",
             'skrining.*.data_anak.tgl_lahir'   =>"required|date_format:Y-m-d",
@@ -54,7 +54,7 @@ class Stunting4118Controller extends Controller
 
             foreach($req['skrining'] as $val){
                 //params
-                $umur=$val['usia_saat_ukur'];
+                $umur=count_month($val['data_anak']['tgl_lahir'], $date);;
                 $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
                     'jenis_kelamin' =>"L",
                     'umur'          =>$umur,
@@ -83,7 +83,7 @@ class Stunting4118Controller extends Controller
                         'tinggi_badan_lahir'=>trim($val['tinggi_badan_lahir'])!=""?$val['tinggi_badan_lahir']:null,
                         'berat_badan'   =>trim($val['berat_badan'])!=""?$val['berat_badan']:null,
                         'tinggi_badan'  =>trim($val['tinggi_badan'])!=""?$val['tinggi_badan']:null,
-                        'usia_saat_ukur'=>trim($val['usia_saat_ukur'])!=""?$val['usia_saat_ukur']:null,
+                        'usia_saat_ukur'=>$umur,
                         'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
                         'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
                         'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
@@ -98,7 +98,7 @@ class Stunting4118Controller extends Controller
                         'tinggi_badan_lahir'=>$val['tinggi_badan_lahir'],
                         'berat_badan'   =>$val['berat_badan'],
                         'tinggi_badan'  =>$val['tinggi_badan'],
-                        'usia_saat_ukur'=>$val['usia_saat_ukur'],
+                        'usia_saat_ukur'=>$umur,
                         'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
                         'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
                         'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
@@ -118,7 +118,7 @@ class Stunting4118Controller extends Controller
         $req=$request->all();
 
         //ROLE AUTHENTICATION
-        if(!in_array($login_data['role'], ['admin', 'dinkes'])){
+        if(!in_array($login_data['role'], ['admin', 'dinkes', 'dinas'])){
             return response()->json([
                 'error' =>"ACCESS_NOT_ALLOWED"
             ], 403);
@@ -165,7 +165,7 @@ class Stunting4118Controller extends Controller
         $req=$request->all();
 
         //ROLE AUTHENTICATION
-        if(!in_array($login_data['role'], ['admin', 'dinkes'])){
+        if(!in_array($login_data['role'], ['admin', 'dinkes', 'dinas'])){
             return response()->json([
                 'error' =>"ACCESS_NOT_ALLOWED"
             ], 403);
