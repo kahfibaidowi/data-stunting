@@ -17,7 +17,6 @@ return new class extends Migration
             $table->id("id_realisasi_bantuan");
             $table->unsignedBigInteger("id_skrining_balita")->comment("dari table stunting 4118");
             $table->unsignedBigInteger("id_rencana_bantuan");
-            $table->double("nominal");
             $table->text("dokumen");
             $table->timestamps();
 

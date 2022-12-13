@@ -5,6 +5,7 @@ namespace App\Repository;
 
 use App\Models\Stunting4118Model;
 use App\Models\RegionModel;
+use App\Models\UserModel;
 
 
 class Stunting4118Repo{
@@ -79,5 +80,102 @@ class Stunting4118Repo{
             'longitude' =>'111.63688',
             'zoom'      =>'11'
         ];
+    }
+
+    public static function gets_sebaran_bantuan($params)
+    {
+        //params
+        $params['per_page']=trim($params['per_page']);
+        $params['tahun']=trim($params['tahun']);
+
+        //query
+        $query=RegionModel::where("type", "kecamatan");
+        //--q
+        $query=$query->where("region", "like", "%".$params['q']."%");
+        //--count stunting
+        $query=$query->withCount("stunting_4118_kecamatan as count_stunting");
+        $query=$query->withCount(["realisasi_bantuan_kecamatan as count_penerima_bantuan"=>function($q)use($params){
+            if($params['tahun']!=""){
+                $q->select(\DB::raw("count(distinct(tbl_intervensi_realisasi_bantuan.id_skrining_balita))"))->whereHas("rencana_bantuan", function($q2)use($params){
+                    $q2->where("tahun", $params['tahun']);
+                });
+            }
+            $q->select(\DB::raw("count(distinct(tbl_intervensi_realisasi_bantuan.id_skrining_balita))"));
+        }]);
+        //--count total bantuan
+        $query=$query->withSum(
+            ["realisasi_bantuan_kecamatan as total_bantuan"=>function($q)use($params){
+                $q->join("tbl_intervensi_rencana_bantuan", "tbl_intervensi_realisasi_bantuan.id_rencana_bantuan", "=", "tbl_intervensi_rencana_bantuan.id_rencana_bantuan")
+                    ->select(\DB::raw('COALESCE(SUM(tbl_intervensi_rencana_bantuan.harga_satuan), 0)'));
+                if($params['tahun']!=""){
+                    $q->where("tbl_intervensi_rencana_bantuan.tahun", $params['tahun']);
+                }
+            }],
+            "harga_satuan"
+        );
+
+        //return
+        return $query->paginate($params['per_page'])->toArray();
+    }
+
+    public static function gets_anggaran($params)
+    {
+        //params
+        $params['per_page']=trim($params['per_page']);
+        $params['tahun']=trim($params['tahun']);
+
+        //query
+        $query=UserModel::where("role", "dinas");
+        //--q
+        $query=$query->where("nama_lengkap" , "like", "%".$params['q']."%");
+        //--total realisasi kegiatan
+        $query=$query->withSum(
+            ["intervensi_realisasi_kegiatan as total_realisasi_kegiatan"=>function($q)use($params){
+                if($params['tahun']!=""){
+                    $q->select(\DB::raw('COALESCE(SUM(jumlah), 0)'))
+                        ->where("tahun", $params['tahun']);
+                }
+                $q->select(\DB::raw('COALESCE(SUM(jumlah), 0)'));
+            }],
+            "jumlah"
+        );
+        //--total realisasi bantuan
+        $query=$query->withSum(
+            ["intervensi_realisasi_bantuan as total_realisasi_bantuan"=>function($q)use($params){
+                if($params['tahun']!=""){
+                    $q->select(\DB::raw('COALESCE(SUM(tbl_intervensi_rencana_bantuan.harga_satuan), 0)'))
+                        ->where("tbl_intervensi_rencana_bantuan.tahun", 2019);
+                }
+                $q->select(\DB::raw('COALESCE(SUM(tbl_intervensi_rencana_bantuan.harga_satuan), 0)'));
+            }],
+            "harga_satuan"
+        );
+        //--total rencana kegiatan
+        $query=$query->withSum(
+            ["intervensi_rencana_kegiatan as total_rencana_kegiatan"=>function($q)use($params){
+                if($params['tahun']!=""){
+                    $q->select(\DB::raw('COALESCE(SUM(jumlah), 0)'))
+                        ->where("tahun", $params['tahun']);
+                }
+                $q->select(\DB::raw('COALESCE(SUM(jumlah), 0)'));
+            }],
+            "jumlah"
+        );
+        //--total rencana bantuan
+        $query=$query->withSum(
+            ["intervensi_rencana_bantuan as total_rencana_bantuan"=>function($q)use($params){
+                if($params['tahun']!=""){
+                    $q->select(\DB::raw('COALESCE(SUM(jumlah), 0)'))
+                        ->where("tahun", $params['tahun']);
+                }
+                $q->select(\DB::raw('COALESCE(SUM(jumlah), 0)'));
+            }],
+            "jumlah"
+        );
+        //--order
+        $query=$query->orderBy("nama_lengkap");
+
+        //return
+        return $query->paginate($params['per_page'])->toArray();
     }
 }

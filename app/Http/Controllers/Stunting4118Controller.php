@@ -180,4 +180,94 @@ class Stunting4118Controller extends Controller
             'center'=>$center
         ]);
     }
+
+    public function gets_sebaran_bantuan(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'dinas'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>[
+                Rule::requiredIf(!isset($req['per_page'])),
+                'integer',
+                'min:1'
+            ],
+            'q'         =>[
+                Rule::requiredIf(!isset($req['q']))
+            ],
+            'tahun'     =>[
+                Rule::requiredIf(!isset($req['tahun'])),
+                "date_format:Y"
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()
+            ], 500);
+        }
+
+        //SUCCESS
+        $sebaran_bantuan=Stunting4118Repo::gets_sebaran_bantuan($req);
+
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$sebaran_bantuan['current_page'],
+            'last_page'     =>$sebaran_bantuan['last_page'],
+            'data'          =>$sebaran_bantuan['data']
+        ]);
+    }
+
+    public function gets_realisasi_anggaran_dinas(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'dinas'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>[
+                Rule::requiredIf(!isset($req['per_page'])),
+                'integer',
+                'min:1'
+            ],
+            'q'         =>[
+                Rule::requiredIf(!isset($req['q']))
+            ],
+            'tahun'     =>[
+                Rule::requiredIf(!isset($req['tahun'])),
+                "date_format:Y"
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $anggaran=Stunting4118Repo::gets_anggaran($req);
+
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$anggaran['current_page'],
+            'last_page'     =>$anggaran['last_page'],
+            'data'          =>$anggaran['data']
+        ]);
+    }
 }
