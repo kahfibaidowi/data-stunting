@@ -144,7 +144,7 @@ class Stunting4118Repo{
             ["intervensi_realisasi_bantuan as total_realisasi_bantuan"=>function($q)use($params){
                 if($params['tahun']!=""){
                     $q->select(\DB::raw('COALESCE(SUM(tbl_intervensi_rencana_bantuan.harga_satuan), 0)'))
-                        ->where("tbl_intervensi_rencana_bantuan.tahun", 2019);
+                        ->where("tbl_intervensi_rencana_bantuan.tahun", $params['tahun']);
                 }
                 $q->select(\DB::raw('COALESCE(SUM(tbl_intervensi_rencana_bantuan.harga_satuan), 0)'));
             }],

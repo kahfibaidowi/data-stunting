@@ -117,3 +117,11 @@ $router->group(['prefix'=>'/intervensi_realisasi_bantuan', 'middleware'=>'auth']
     $router->get("/{id}", ['uses'=>"IntervensiRealisasiBantuanController@get"]);
     $router->get("/", ['uses'=>"IntervensiRealisasiBantuanController@gets"]);
 });
+
+//HOME
+$router->group(['prefix'=>'/home'], function()use($router){
+    $router->get("/stunting_4118", ['uses'=>"HomeController@gets_stunting"]);
+    $router->get("/stunting_4118/summary_kecamatan", ['uses'=>"HomeController@gets_stunting_by_kecamatan"]);
+    $router->get("/stunting_4118/summary_realisasi_bantuan_per_tahun", ['uses'=>"HomeController@gets_realisasi_bantuan_dinas_by_tahun"]);
+    $router->get("/stunting_4118/summary_realisasi_bantuan_per_dinas", ['uses'=>"HomeController@gets_realisasi_bantuan_tahun_by_dinas"]);
+});
