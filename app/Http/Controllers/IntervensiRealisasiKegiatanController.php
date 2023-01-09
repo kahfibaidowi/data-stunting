@@ -29,22 +29,17 @@ class IntervensiRealisasiKegiatanController extends Controller
 
         //VALIDATION
         $validation=Validator::make($req, [
-            'id_user'   =>[
+            "id_rencana_kegiatan"   =>[
                 "required",
-                Rule::exists("App\Models\UserModel")->where(function($q)use($req, $login_data){
+                Rule::exists("App\Models\IntervensiRencanaKegiatanModel")->where(function($q)use($req, $login_data){
                     if($login_data['role']=="dinas"){
-                        return $q->where("role", "dinas")
-                            ->where("id_user", $login_data['id_user']);
+                        return $q->where("id_user", $login_data['id_user']);
                     }
-                    return $q->where("role", "dinas");
                 })
             ],
-            "tahun"     =>"required|date_format:Y",
-            "kegiatan"  =>"required",
-            "sasaran"   =>[Rule::requiredIf(!isset($req['detail_kegiatan']))],
-            "anggaran"  =>"required|numeric|min:0",
-            "satuan"    =>"required",
-            "detail_kegiatan"   =>[Rule::requiredIf(!isset($req['detail_kegiatan']))]
+            "dokumen"           =>[
+                Rule::requiredIf(!isset($req['dokumen']))
+            ]
         ]);
         if($validation->fails()){
             return response()->json([
@@ -56,14 +51,8 @@ class IntervensiRealisasiKegiatanController extends Controller
         //SUCCESS
         DB::transaction(function()use($req){
             IntervensiRealisasiKegiatanModel::create([
-                'id_user'   =>$req['id_user'],
-                'tahun'     =>$req['tahun'],
-                'kegiatan'  =>$req['kegiatan'],
-                'sasaran'   =>$req['sasaran'],
-                'anggaran'  =>$req['anggaran'],
-                'satuan'    =>$req['satuan'],
-                'detail_kegiatan'   =>$req['detail_kegiatan'],
-                'jumlah'    =>$req['anggaran']
+                'id_rencana_kegiatan'=>$req['id_rencana_kegiatan'],
+                'dokumen'   =>$req['dokumen']
             ]);
         });
 
@@ -89,17 +78,24 @@ class IntervensiRealisasiKegiatanController extends Controller
         $validation=Validator::make($req, [
             'id_realisasi_kegiatan'   =>[
                 "required",
-                Rule::exists("App\Models\IntervensiRealisasiKegiatanModel")->where(function($q)use($req, $login_data){
-                    if($login_data['role']=="dinas"){
-                        return $q->where("id_user", $login_data['id_user']);
-                    }
-                })
+                function($attr, $value, $fail)use($req, $login_data){
+                    if(!isset($value)) return $fail("id_realisasi_kegiatan required.");
+
+                    $v=IntervensiRealisasiKegiatanModel::where("id_realisasi_kegiatan", $value)
+                        ->whereHas("rencana_kegiatan", function($q)use($req, $login_data){
+                            if($login_data['role']=="dinas"){
+                                return $q->where("id_user", $login_data['id_user']);
+                            }
+                        });
+                    
+                    if(is_null($v->first())) return $fail("id_realiasasi_kegiatan is invalid.");
+
+                    return true;
+                }
             ],
-            "kegiatan"  =>"required",
-            "sasaran"   =>[Rule::requiredIf(!isset($req['sasaran']))],
-            "anggaran"  =>"required|numeric|min:0",
-            "satuan"    =>"required",
-            "detail_kegiatan"   =>[Rule::requiredIf(!isset($req['detail_kegiatan']))]
+            "dokumen"           =>[
+                Rule::requiredIf(!isset($req['dokumen']))
+            ]
         ]);
         if($validation->fails()){
             return response()->json([
@@ -112,12 +108,7 @@ class IntervensiRealisasiKegiatanController extends Controller
         DB::transaction(function()use($req){
             IntervensiRealisasiKegiatanModel::where("id_realisasi_kegiatan", $req['id_realisasi_kegiatan'])
                 ->update([
-                    'kegiatan'  =>$req['kegiatan'],
-                    'sasaran'   =>$req['sasaran'],
-                    'anggaran'  =>$req['anggaran'],
-                    'satuan'    =>$req['satuan'],
-                    'detail_kegiatan'   =>$req['detail_kegiatan'],
-                    'jumlah'    =>$req['anggaran']
+                    'dokumen'  =>$req['dokumen']
                 ]);
         });
 
@@ -143,11 +134,20 @@ class IntervensiRealisasiKegiatanController extends Controller
         $validation=Validator::make($req, [
             'id_realisasi_kegiatan'   =>[
                 "required",
-                Rule::exists("App\Models\IntervensiRealisasiKegiatanModel")->where(function($q)use($req, $login_data){
-                    if($login_data['role']=="dinas"){
-                        return $q->where("id_user", $login_data['id_user']);
-                    }
-                })
+                function($attr, $value, $fail)use($req, $login_data){
+                    if(!isset($value)) return $fail("id_realisasi_kegiatan required.");
+
+                    $v=IntervensiRealisasiKegiatanModel::where("id_realisasi_kegiatan", $value)
+                        ->whereHas("rencana_kegiatan", function($q)use($req, $login_data){
+                            if($login_data['role']=="dinas"){
+                                return $q->where("id_user", $login_data['id_user']);
+                            }
+                        });
+                    
+                    if(is_null($v->first())) return $fail("id_realiasasi_kegiatan is invalid.");
+
+                    return true;
+                }
             ]
         ]);
         if($validation->fails()){

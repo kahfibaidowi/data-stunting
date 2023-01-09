@@ -15,18 +15,12 @@ return new class extends Migration
     {
         Schema::create('tbl_intervensi_realisasi_kegiatan', function (Blueprint $table) {
             $table->id("id_realisasi_kegiatan");
-            $table->unsignedBigInteger("id_user")->comment("created by");
-            $table->integer("tahun");
-            $table->text("kegiatan");
-            $table->text("sasaran");
-            $table->double("anggaran");
-            $table->text("satuan");
-            $table->text("detail_kegiatan");
-            $table->double("jumlah");
+            $table->unsignedBigInteger("id_rencana_kegiatan");
+            $table->text("dokumen");
             $table->timestamps();
 
             //fk
-            $table->foreign("id_user")->references("id_user")->on("tbl_users")->onDelete("cascade");
+            $table->foreign("id_rencana_kegiatan")->references("id_rencana_kegiatan")->on("tbl_intervensi_rencana_kegiatan")->onDelete("cascade");
         });
     }
 

@@ -132,10 +132,10 @@ class Stunting4118Repo{
         $query=$query->withSum(
             ["intervensi_realisasi_kegiatan as total_realisasi_kegiatan"=>function($q)use($params){
                 if($params['tahun']!=""){
-                    $q->select(\DB::raw('COALESCE(SUM(jumlah), 0)'))
-                        ->where("tahun", $params['tahun']);
+                    $q->select(\DB::raw('COALESCE(SUM(tbl_intervensi_rencana_kegiatan.jumlah), 0)'))
+                        ->where("tbl_intervensi_rencana_kegiatan.tahun", $params['tahun']);
                 }
-                $q->select(\DB::raw('COALESCE(SUM(jumlah), 0)'));
+                $q->select(\DB::raw('COALESCE(SUM(tbl_intervensi_rencana_kegiatan.jumlah), 0)'));
             }],
             "jumlah"
         );

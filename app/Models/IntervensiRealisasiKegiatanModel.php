@@ -11,13 +11,8 @@ class IntervensiRealisasiKegiatanModel extends Model{
     protected $primaryKey="id_realisasi_kegiatan";
     protected $fillable=[
         "id_user",
-        "tahun",
-        "kegiatan",
-        "sasaran",
-        "anggaran",
-        "satuan",
-        "detail_kegiatan",
-        "jumlah"
+        "id_rencana_kegiatan",
+        "dokumen"
     ];
     protected $perPage=99999999999999999999;
 
@@ -26,7 +21,7 @@ class IntervensiRealisasiKegiatanModel extends Model{
      *#FUNCTION
      *
      */
-    public function user(){
-        return $this->belongsTo(UserModel::class, "id_user");
+    public function rencana_kegiatan(){
+        return $this->belongsTo(IntervensiRencanaKegiatanModel::class, "id_rencana_kegiatan");
     }
 }

@@ -10,7 +10,7 @@ class IntervensiRealisasiKegiatanRepo{
     public static function get_kegiatan($kegiatan_id)
     {
         //query
-        $query=IntervensiRealisasiKegiatanModel::where("id_realisasi_kegiatan", $kegiatan_id);
+        $query=IntervensiRealisasiKegiatanModel::with("rencana_kegiatan")->where("id_realisasi_kegiatan", $kegiatan_id);
         
         //return
         return optional($query->first())->toArray();
@@ -22,16 +22,15 @@ class IntervensiRealisasiKegiatanRepo{
         $params['per_page']=trim($params['per_page']);
 
         //query
-        $query=IntervensiRealisasiKegiatanModel::query();
-        //--q
-        $query=$query->where(function($q)use($params){
-            return $q->where("kegiatan", "like", "%".$params['q']."%")
-                ->orWhere("detail_kegiatan", "like", "%".$params['q']."%");
+        $query=IntervensiRealisasiKegiatanModel::with("rencana_kegiatan");
+        $query=$query->whereHas("rencana_kegiatan", function($q)use($params){
+            return $q->where("id_user", $params['id_user'])
+                ->where("tahun", $params['tahun'])
+                ->where(function($q2)use($params){
+                    return $q2->where("kegiatan", "like", "%".$params['q']."%")
+                    ->orWhere("detail_kegiatan", "like", "%".$params['q']."%");
+                });
         });
-        //--id user
-        $query=$query->where("id_user", $params['id_user']);
-        //--tahun
-        $query=$query->where("tahun", $params['tahun']);
         //--order
         $query=$query->orderByDesc("id_realisasi_kegiatan");
 

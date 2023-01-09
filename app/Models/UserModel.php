@@ -40,7 +40,14 @@ class UserModel extends Model{
     }
 
     public function intervensi_realisasi_kegiatan(){
-        return $this->hasMany(IntervensiRealisasiKegiatanModel::class, "id_user");
+        return $this->hasManyThrough(
+            IntervensiRealisasiKegiatanModel::class,
+            IntervensiRencanaKegiatanModel::class,
+            "id_user",
+            "id_rencana_kegiatan",
+            "id_user",
+            "id_rencana_kegiatan"
+        );
     }
 
     public function intervensi_realisasi_bantuan(){
