@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -180,25 +182,59 @@ class AuthController extends Controller
         ], 401);
     }
 
-    //GENERATE SYSTEM TOKEN
-    public function generate_kependudukan_system_token(Request $request)
+    public function request_stunting_madiunkab(Request $request)
     {
-        $login_data=$request['fm__login_data'];
         $req=$request->all();
 
-        //token
-        $expired=60;
-        $time=time();
-        $token=[
-            'iat'   =>$time,
-            'nbf'   =>$time,
-            'exp'   =>$time+$expired,
-            'uid'   =>""
-        ];
-        $generated_token=JWT::encode($token, env("JWT_SECRET_KEPENDUDUKAN_SYSTEM"), env("JWT_ALGORITM"));
-
-        return response()->json([
-            'data'  =>$generated_token
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'methods'   =>"required|in:GET,POST",
+            'endpoint'  =>"required",
+            'params'    =>[
+                Rule::requiredIf(!isset($req['params']))
+            ]
         ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $url="https://api.stunting.madiunkab.go.id";
+        $client=new Client([
+            'base_uri'  =>$url
+        ]);
+
+        try{
+            if($req['methods']=="GET"){
+                $request_data=$client->request("GET", $req['endpoint'], [
+                    'query'     =>$req['params'],
+                    'headers'   =>[
+                        'secret-key'=>"Rxm6pJwmx1Zrs?Lv5EHx4HSJfdgxNVYqeKbR=JeZuoCJ5Sis?LoYQMhnVYMS6wYHxCGgi98jgipMi0Tl3?/ybxClOYOlQb/lcyz!4Hakw95=rIh/FQezg!lJQxOVu=Hl8kln/QUlc-D0Xnnuj2g=6SRe6rw0pfuhfdP7NAHefDh25e-RKcwT6KvO4FeTBOUszChVBbP5zbXu72NzF2DOP!vEIjnZRY5noYxEQO3S/XVq4MRbIHbLzuZkBm0j309h"
+                    ]
+                ]);
+                $response=$request_data->getBody()->getContents();
+                $status_code=$request_data->getStatusCode();
+            }
+            if($req['methods']=="POST"){
+                $request_data=$client->post($req['endpoint'], [
+                    'json'      =>$req['params'],
+                    'headers'   =>[
+                        'secret-key'    =>"Rxm6pJwmx1Zrs?Lv5EHx4HSJfdgxNVYqeKbR=JeZuoCJ5Sis?LoYQMhnVYMS6wYHxCGgi98jgipMi0Tl3?/ybxClOYOlQb/lcyz!4Hakw95=rIh/FQezg!lJQxOVu=Hl8kln/QUlc-D0Xnnuj2g=6SRe6rw0pfuhfdP7NAHefDh25e-RKcwT6KvO4FeTBOUszChVBbP5zbXu72NzF2DOP!vEIjnZRY5noYxEQO3S/XVq4MRbIHbLzuZkBm0j309h",
+                        'content-type'  =>"application/json"
+                    ]
+                ]);
+                $response=$request_data->getBody()->getContents();
+                $status_code=$request_data->getStatusCode();
+            }
+        }
+        catch(ClientException $e){
+            $response=$e->getResponse()->getBody()->getContents();
+            $status_code=$e->getResponse()->getStatusCode();
+        }
+
+        return response()->json(json_decode($response), $status_code);
     }
 }

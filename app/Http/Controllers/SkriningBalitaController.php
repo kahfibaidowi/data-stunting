@@ -47,7 +47,9 @@ class SkriningBalitaController extends Controller
             'data_anak.nik'         =>"required",
             'data_anak.tgl_lahir'   =>"required|date_format:Y-m-d",
             'data_anak.jenis_kelamin'=>"required|in:L,P",
-            'data_anak.ibu'         =>"required",
+            'data_anak.ibu'         =>[
+                Rule::requiredIf(!isset($req['data_anak']['ibu']))
+            ],
             'data_anak.ayah'        =>[
                 Rule::requiredIf(!isset($req['data_anak']['ayah']))
             ],
@@ -139,7 +141,6 @@ class SkriningBalitaController extends Controller
             'skrining.*.data_anak.nik'         =>"required",
             'skrining.*.data_anak.tgl_lahir'   =>"required|date_format:Y-m-d",
             'skrining.*.data_anak.jenis_kelamin'=>"required|in:L,P",
-            'skrining.*.data_anak.ibu'         =>"required",
             'skrining.*.berat_badan_lahir' =>"required|numeric",
             'skrining.*.tinggi_badan_lahir'=>"required|numeric",
             'skrining.*.berat_badan'   =>"required|numeric",

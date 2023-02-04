@@ -17,7 +17,7 @@
 //AUTHENTICATION
 $router->group(['prefix'=>'/auth', 'middleware'=>'auth'], function()use($router){
     $router->get("/verify", ['uses'=>"AuthController@verify_login"]);
-    $router->get("/generate_kependudukan_system_token", ['uses'=>"AuthController@generate_kependudukan_system_token"]);
+    $router->post("/request_stunting_madiunkab", ['uses'=>"AuthController@request_stunting_madiunkab"]);
     $router->get("/profile", ['uses'=>"AuthController@get_profile"]);
     $router->put("/profile", ['uses'=>"AuthController@update_profile"]);
     $router->delete("/logout", ['uses'=>"AuthController@logout"]);

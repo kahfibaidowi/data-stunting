@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.0",
         "firebase/php-jwt": "^6.3",
+        "guzzlehttp/guzzle": "^7.5",
         "intervention/image": "^2.7",
         "laravel/lumen-framework": "^9.0",
         "staudenmeir/eloquent-has-many-deep": "^1.17"
