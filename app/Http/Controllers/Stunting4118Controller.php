@@ -56,17 +56,17 @@ class Stunting4118Controller extends Controller
                 //params
                 $umur=count_month($val['data_anak']['tgl_lahir'], $date);;
                 $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
-                    'jenis_kelamin' =>"L",
+                    'jenis_kelamin' =>$req['data_anak']['jenis_kelamin'],
                     'umur'          =>$umur,
                     'tinggi_badan'   =>$val['tinggi_badan']
                 ])['result']['kategori'];
                 $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
-                    'jenis_kelamin' =>"L",
+                    'jenis_kelamin' =>$req['data_anak']['jenis_kelamin'],
                     'umur'  =>$umur,
                     'berat_badan'  =>$val['berat_badan']
                 ])['result']['kategori'];
                 $hasil_berat_badan_per_tinggi_badan=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
-                    'jenis_kelamin' =>"L",
+                    'jenis_kelamin' =>$req['data_anak']['jenis_kelamin'],
                     'umur'  =>$umur,
                     'tinggi_badan'  =>$val['tinggi_badan'],
                     'berat_badan'  =>$val['berat_badan']

@@ -17,6 +17,7 @@ class SkriningBalitaController extends Controller
     {
         $login_data=$request['fm__login_data'];
         $req=$request->all();
+        $today=date("Y-m-d");
 
         //ROLE AUTHENTICATION
         if(!in_array($login_data['role'], ['admin', 'dinkes', 'posyandu'])){
@@ -43,15 +44,26 @@ class SkriningBalitaController extends Controller
                 },
                 Rule::exists("App\Models\UserModel", "id_user")
             ],
+            'input_bulan'           =>"required|numeric",
             'data_anak'             =>"required",
-            'data_anak.nik'         =>"required",
+            'data_anak.nik'         =>[
+                "required",
+                function($attr, $value, $fail)use($req, $today){
+                    if(!isset($req['data_anak']['tgl_lahir'])) return $fail("nik error.");
+                    if(!isset($req['input_bulan'])) return $fail("input_bulan error.");
+
+                    $umur=count_month($req['data_anak']['tgl_lahir'], $today)+$req['input_bulan'];
+                    $r_skrining=SkriningBalitaModel::
+                        where("data_anak->nik", $value)
+                        ->where("usia_saat_ukur", $umur)
+                        ->first();
+                    if(!is_null($r_skrining)) return $fail("Only 1/month input skrining.");
+                }
+            ],
             'data_anak.tgl_lahir'   =>"required|date_format:Y-m-d",
             'data_anak.jenis_kelamin'=>"required|in:L,P",
             'data_anak.ibu'         =>[
                 Rule::requiredIf(!isset($req['data_anak']['ibu']))
-            ],
-            'data_anak.ayah'        =>[
-                Rule::requiredIf(!isset($req['data_anak']['ayah']))
             ],
             'berat_badan_lahir' =>"required|numeric",
             'tinggi_badan_lahir'=>"required|numeric",
@@ -66,25 +78,31 @@ class SkriningBalitaController extends Controller
         }
 
         //SUCCESS
-        DB::transaction(function()use($req){
+        DB::transaction(function()use($req, $today){
             //params
-            $umur=count_month($req['data_anak']['tgl_lahir'], date("Y-m-d"));
+            $umur=count_month($req['data_anak']['tgl_lahir'], $today)+$req['input_bulan'];
             $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
-                'jenis_kelamin' =>"L",
+                'jenis_kelamin' =>$req['data_anak']['jenis_kelamin'],
                 'umur'          =>$umur,
-                'tinggi_badan'   =>$req['tinggi_badan']
+                'tinggi_badan'  =>$req['tinggi_badan']
             ])['result']['kategori'];
             $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
-                'jenis_kelamin' =>"L",
-                'umur'  =>$umur,
-                'berat_badan'  =>$req['berat_badan']
+                'jenis_kelamin' =>$req['data_anak']['jenis_kelamin'],
+                'umur'          =>$umur,
+                'berat_badan'   =>$req['berat_badan']
             ])['result']['kategori'];
             $hasil_berat_badan_per_tinggi_badan=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
-                'jenis_kelamin' =>"L",
-                'umur'  =>$umur,
+                'jenis_kelamin' =>$req['data_anak']['jenis_kelamin'],
+                'umur'          =>$umur,
                 'tinggi_badan'  =>$req['tinggi_badan'],
-                'berat_badan'  =>$req['berat_badan']
+                'berat_badan'   =>$req['berat_badan']
             ])['result']['kategori'];
+            $hasil_status_gizi=SkriningBalitaRepo::generate_status_gizi([
+                'jenis_kelamin' =>$req['data_anak']['jenis_kelamin'],
+                'umur'          =>$umur,
+                'berat_badan'   =>$req['berat_badan'],
+                'nik'           =>$req['data_anak']['nik']
+            ]);
 
             //create
             SkriningBalitaModel::create([
@@ -97,98 +115,31 @@ class SkriningBalitaController extends Controller
                 'usia_saat_ukur'=>$umur,
                 'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
                 'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
-                'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
+                'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan,
+                'hasil_status_gizi'                 =>$hasil_status_gizi
             ]);
-        });
 
-        return response()->json([
-            'status'=>"ok"
-        ]);
-    }
-
-    public function add_multiple(Request $request)
-    {
-        $login_data=$request['fm__login_data'];
-        $req=$request->all();
-
-        //ROLE AUTHENTICATION
-        if(!in_array($login_data['role'], ['admin', 'dinkes', 'posyandu'])){
-            return response()->json([
-                'error' =>"ACCESS_NOT_ALLOWED"
-            ], 403);
-        }
-
-        //VALIDATION
-        $validation=Validator::make($req, [
-            'id_user'       =>[
-                Rule::requiredIf(function()use($req, $login_data){
-                    if(!isset($req['id_user'])) return true;
-                    if($login_data['role']=="posyandu" && trim($req['id_user'])=="") return true;
-                    return false;
-                }),
-                function($attr, $value, $fail)use($req, $login_data){
-                    if($login_data['role']=="posyandu"){
-                        if($login_data['id_user']!=$req['id_user']){
-                            return $fail("Id user error.");
-                        }
-                    }
-                    return true;
-                },
-                Rule::exists("App\Models\UserModel", "id_user")
-            ],
-            'skrining'              =>"required|array",
-            'skrining.*.data_anak'             =>"required|required_array_keys:ayah",
-            'skrining.*.data_anak.nik'         =>"required",
-            'skrining.*.data_anak.tgl_lahir'   =>"required|date_format:Y-m-d",
-            'skrining.*.data_anak.jenis_kelamin'=>"required|in:L,P",
-            'skrining.*.berat_badan_lahir' =>"required|numeric",
-            'skrining.*.tinggi_badan_lahir'=>"required|numeric",
-            'skrining.*.berat_badan'   =>"required|numeric",
-            'skrining.*.tinggi_badan'  =>"required|numeric"
-        ]);
-        if($validation->fails()){
-            return response()->json([
-                'error' =>"VALIDATION_ERROR",
-                'data'  =>$validation->errors()->first()
-            ], 500);
-        }
-
-        //SUCCESS
-        DB::transaction(function()use($req){
-            $date=date("Y-m-d");
-
-            foreach($req['skrining'] as $val){
+            //NEXT SKRINING
+            $n_skrining=SkriningBalitaModel::
+                where("data_anak->nik", $req['data_anak']['nik'])
+                ->where("usia_saat_ukur", $umur+1)
+                ->orderBy("id_skrining_balita")
+                ->lockForUpdate()
+                ->first();
+            
+            if(!is_null($n_skrining)){
                 //params
-                $umur=count_month($val['data_anak']['tgl_lahir'], $date);
-                $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
-                    'jenis_kelamin' =>"L",
-                    'umur'          =>$umur,
-                    'tinggi_badan'   =>$val['tinggi_badan']
-                ])['result']['kategori'];
-                $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
-                    'jenis_kelamin' =>"L",
-                    'umur'  =>$umur,
-                    'berat_badan'  =>$val['berat_badan']
-                ])['result']['kategori'];
-                $hasil_berat_badan_per_tinggi_badan=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
-                    'jenis_kelamin' =>"L",
-                    'umur'  =>$umur,
-                    'tinggi_badan'  =>$val['tinggi_badan'],
-                    'berat_badan'  =>$val['berat_badan']
-                ])['result']['kategori'];
+                $n_umur=$n_skrining['usia_saat_ukur'];
+                $n_hasil_status_gizi=SkriningBalitaRepo::generate_status_gizi([
+                    'jenis_kelamin' =>$n_skrining['data_anak']['jenis_kelamin'],
+                    'umur'          =>$n_umur,
+                    'berat_badan'   =>$n_skrining['berat_badan'],
+                    'nik'           =>$n_skrining['data_anak']['nik']
+                ]);
 
                 //update
-                SkriningBalitaModel::create([
-                    'id_user'   =>trim($req['id_user'])!=""?$req['id_user']:null,
-                    'data_anak' =>$val['data_anak'],
-                    'berat_badan_lahir' =>$val['berat_badan_lahir'],
-                    'tinggi_badan_lahir'=>$val['tinggi_badan_lahir'],
-                    'berat_badan'   =>$val['berat_badan'],
-                    'tinggi_badan'  =>$val['tinggi_badan'],
-                    'usia_saat_ukur'=>$umur,
-                    'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
-                    'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
-                    'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
+                $n_skrining->update([
+                    'hasil_status_gizi' =>$n_hasil_status_gizi
                 ]);
             }
         });
@@ -202,6 +153,7 @@ class SkriningBalitaController extends Controller
     {
         $login_data=$request['fm__login_data'];
         $req=$request->all();
+        $today=date("Y-m-d");
 
         //ROLE AUTHENTICATION
         if(!in_array($login_data['role'], ['admin', 'dinkes', 'posyandu'])){
@@ -213,7 +165,14 @@ class SkriningBalitaController extends Controller
         //VALIDATION
         $req['id_skrining_balita']=$id;
         $validation=Validator::make($req, [
-            'id_skrining_balita'=>"required|exists:App\Models\SkriningBalitaModel,id_skrining_balita",
+            'id_skrining_balita'=>[
+                "required",
+                Rule::exists("App\Models\SkriningBalitaModel")->where(function($q)use($req, $login_data){
+                    if($login_data['role']=="posyandu"){
+                        return $q->where("id_user", $login_data['id_user']);
+                    }
+                })
+            ],
             'berat_badan_lahir' =>"required|numeric",
             'tinggi_badan_lahir'=>"required|numeric",
             'berat_badan'   =>"required|numeric",
@@ -228,26 +187,32 @@ class SkriningBalitaController extends Controller
 
         //SUCCESS
         DB::transaction(function()use($req){
-            $skrining=SkriningBalitaRepo::get_skrining($req['id_skrining_balita']);
+            $skrining=SkriningBalitaModel::where("id_skrining_balita", $req['id_skrining_balita'])->lockForUpdate()->first();
 
             //params
             $umur=$skrining['usia_saat_ukur'];
             $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
-                'jenis_kelamin' =>"L",
-                'umur'  =>$umur,
-                'tinggi_badan'   =>$req['tinggi_badan']
+                'jenis_kelamin' =>$skrining['data_anak']['jenis_kelamin'],
+                'umur'          =>$umur,
+                'tinggi_badan'  =>$req['tinggi_badan']
             ])['result']['kategori'];
             $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
-                'jenis_kelamin' =>"L",
-                'umur'  =>$umur,
-                'berat_badan'  =>$req['berat_badan']
+                'jenis_kelamin' =>$skrining['data_anak']['jenis_kelamin'],
+                'umur'          =>$umur,
+                'berat_badan'   =>$req['berat_badan']
             ])['result']['kategori'];
-            $hasil_berat_badan_per_umur=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
-                'jenis_kelamin' =>"L",
-                'umur'  =>$umur,
+            $hasil_berat_badan_per_tinggi_badan=SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
+                'jenis_kelamin' =>$skrining['data_anak']['jenis_kelamin'],
+                'umur'          =>$umur,
                 'tinggi_badan'  =>$req['tinggi_badan'],
-                'berat_badan'  =>$req['berat_badan']
+                'berat_badan'   =>$req['berat_badan']
             ])['result']['kategori'];
+            $hasil_status_gizi=SkriningBalitaRepo::generate_status_gizi([
+                'jenis_kelamin' =>$skrining['data_anak']['jenis_kelamin'],
+                'umur'          =>$umur,
+                'berat_badan'   =>$req['berat_badan'],
+                'nik'           =>$skrining['data_anak']['nik']
+            ]);
 
             //update
             SkriningBalitaModel::where("id_skrining_balita", $req['id_skrining_balita'])
@@ -258,8 +223,33 @@ class SkriningBalitaController extends Controller
                     'tinggi_badan'  =>$req['tinggi_badan'],
                     'hasil_tinggi_badan_per_umur'       =>$hasil_tinggi_badan_per_umur,
                     'hasil_berat_badan_per_umur'        =>$hasil_berat_badan_per_umur,
-                    'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan
+                    'hasil_berat_badan_per_tinggi_badan'=>$hasil_berat_badan_per_tinggi_badan,
+                    'hasil_status_gizi'                 =>$hasil_status_gizi
                 ]);
+
+            //NEXT SKRINING
+            $n_skrining=SkriningBalitaModel::
+                where("data_anak->nik", $skrining['data_anak']['nik'])
+                ->where("usia_saat_ukur", $umur+1)
+                ->orderBy("id_skrining_balita")
+                ->lockForUpdate()
+                ->first();
+            
+            if(!is_null($n_skrining)){
+                //params
+                $n_umur=$n_skrining['usia_saat_ukur'];
+                $n_hasil_status_gizi=SkriningBalitaRepo::generate_status_gizi([
+                    'jenis_kelamin' =>$n_skrining['data_anak']['jenis_kelamin'],
+                    'umur'          =>$n_umur,
+                    'berat_badan'   =>$n_skrining['berat_badan'],
+                    'nik'           =>$n_skrining['data_anak']['nik']
+                ]);
+
+                //update
+                $n_skrining->update([
+                    'hasil_status_gizi' =>$n_hasil_status_gizi
+                ]);
+            }
         });
 
         return response()->json([
@@ -319,7 +309,7 @@ class SkriningBalitaController extends Controller
         $req=$request->all();
 
         //ROLE AUTHENTICATION
-        if(false){
+        if(!in_array($login_data['role'], ['admin', 'dinkes', 'posyandu'])){
             return response()->json([
                 'error' =>"ACCESS_NOT_ALLOWED"
             ], 403);
@@ -351,7 +341,7 @@ class SkriningBalitaController extends Controller
         $req=$request->all();
 
         //ROLE AUTHENTICATION
-        if(false){
+        if(!in_array($login_data['role'], ['admin', 'dinkes', 'posyandu'])){
             return response()->json([
                 'error' =>"ACCESS_NOT_ALLOWED"
             ], 403);
@@ -391,7 +381,7 @@ class SkriningBalitaController extends Controller
         $req=$request->all();
 
         //ROLE AUTHENTICATION
-        if(false){
+        if(!in_array($login_data['role'], ['admin', 'dinkes', 'posyandu'])){
             return response()->json([
                 'error' =>"ACCESS_NOT_ALLOWED"
             ], 403);
@@ -407,18 +397,40 @@ class SkriningBalitaController extends Controller
             'q'         =>[
                 Rule::requiredIf(!isset($req['q']))
             ],
+            'nik'       =>[
+                Rule::requiredIf(!isset($req['nik']))
+            ],
+            'district_id'   =>[
+                Rule::requiredIf(!isset($req['district_id'])),
+                Rule::exists("\App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "kecamatan");
+                })
+            ],
+            'village_id'   =>[
+                Rule::requiredIf(!isset($req['village_id'])),
+                Rule::exists("\App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "desa");
+                })
+            ],
             'posyandu_id'   =>[
-                Rule::requiredIf(function()use($req, $login_data){
-                    if(!isset($req['posyandu_id'])) return true;
-                    if($login_data['role']=="posyandu") return true;
-                    return false;
-                }),
-                function($attr, $value, $fail)use($req, $login_data){
-                    if(!isset($req['posyandu_id'])) return $fail("Posyandu id error.");
-                    if($req['posyandu_id']!=$login_data['id_user']&&$login_data['role']=="posyandu") return $fail("Posyandu id error.");
-                    return true;
-                },
+                Rule::requiredIf(!isset($req['posyandu_id'])),
                 Rule::exists("App\Models\UserModel", "id_user")
+            ],
+            'bbu'   =>[
+                Rule::requiredIf(!isset($req['bbu']))
+            ],
+            'tbu'   =>[
+                Rule::requiredIf(!isset($req['tbu']))
+            ],
+            'bbtb'  =>[
+                Rule::requiredIf(!isset($req['bbtb']))
+            ],
+            'status_gizi'   =>[
+                Rule::requiredIf(!isset($req['status_gizi']))
+            ],
+            'tindakan'      =>[
+                Rule::requiredIf(!isset($req['tindakan'])),
+                "in:rujuk,tidak_ada"
             ]
         ]);
         if($validation->fails()){
@@ -436,6 +448,41 @@ class SkriningBalitaController extends Controller
             'current_page'  =>$skrining['current_page'],
             'last_page'     =>$skrining['last_page'],
             'data'          =>$skrining['data']
+        ]);
+    }
+
+    public function get_formula(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'dinkes', 'posyandu'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //SUCCESS
+        return response()->json([
+            'data'  =>[
+                'l' =>[
+                    'berat_badan_umur'  =>SkriningBalitaRepo::table_bb_u_laki_laki(),
+                    'tinggi_badan_umur' =>SkriningBalitaRepo::table_pb_u_laki_laki(),
+                    'bb_tb'             =>[
+                        '024'   =>SkriningBalitaRepo::table_bb_tb_024_laki_laki(),
+                        '2460'  =>SkriningBalitaRepo::table_bb_tb_2460_laki_laki()
+                    ]
+                ],
+                'p' =>[
+                    'berat_badan_umur'  =>SkriningBalitaRepo::table_bb_u_perempuan(),
+                    'tinggi_badan_umur' =>SkriningBalitaRepo::table_pb_u_perempuan(),
+                    'bb_tb'             =>[
+                        '024'   =>SkriningBalitaRepo::table_bb_tb_024_perempuan(),
+                        '2460'  =>SkriningBalitaRepo::table_bb_tb_2460_perempuan()
+                    ]
+                ]
+            ]
         ]);
     }
 }

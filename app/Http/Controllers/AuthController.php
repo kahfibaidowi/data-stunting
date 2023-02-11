@@ -202,9 +202,9 @@ class AuthController extends Controller
         }
 
         //SUCCESS
-        $url="https://api.stunting.madiunkab.go.id";
+        $url="https://api.madiunkab.go.id";
         $client=new Client([
-            'base_uri'  =>$url
+            'base_uri'  =>isset($req['domain'])?$req['domain']:$url
         ]);
 
         try{

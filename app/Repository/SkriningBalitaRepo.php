@@ -12,18 +12,70 @@ class SkriningBalitaRepo{
         //params
         $params['per_page']=trim($params['per_page']);
         $params['posyandu_id']=trim($params['posyandu_id']);
+        $params['district_id']=trim($params['district_id']);
+        $params['village_id']=trim($params['village_id']);
+        $params['nik']=trim($params['nik']);
+        $params['bbu']=trim($params['bbu']);
+        $params['tbu']=trim($params['tbu']);
+        $params['bbtb']=trim($params['bbtb']);
+        $params['status_gizi']=trim($params['status_gizi']);
+        $params['tindakan']=trim($params['tindakan']);
 
         //query
         $query=SkriningBalitaModel::with("user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");
+        //--kecamatan
+        if($params['district_id']!=""){
+            $query=$query->whereHas("user_posyandu.region.parent", function($q)use($params){
+                return $q->where("id_region", $params['district_id']);
+            });
+        }
+        //--desa
+        if($params['village_id']!=""){
+            $query=$query->whereHas("user_posyandu.region", function($q)use($params){
+                return $q->where("id_region", $params['village_id']);
+            });
+        }
         //--posyandu id
         if($params['posyandu_id']!=""){
             $query=$query->where("id_user", $params['posyandu_id']);
         }
+        //--bbu
+        if($params['bbu']!=""){
+            $query=$query->where("hasil_berat_badan_per_umur", $params['bbu']);
+        }
+        //--tbu
+        if($params['tbu']!=""){
+            $query=$query->where("hasil_tinggi_badan_per_umur", $params['tbu']);
+        }
+        //--bbtb
+        if($params['bbtb']!=""){
+            $query=$query->where("hasil_berat_badan_per_tinggi_badan", $params['bbtb']);
+        }
+        //--status gizi
+        if($params['status_gizi']!=""){
+            $query=$query->where("hasil_status_gizi", $params['status_gizi']);
+        }
+        //--nik
+        if($params['nik']!=""){
+            $query=$query->where("data_anak->nik", $params['nik']);
+        }
+        //--tindakan
+        if($params['tindakan']!=""){
+            if($params['tindakan']=="rujuk"){
+                $query=$query->where(function($q){
+                    $q->where("hasil_berat_badan_per_umur", "!=", "gizi_baik")
+                        ->orWhere("hasil_status_gizi", "T");
+                });
+            }
+            elseif($params['tindakan']=="tidak_ada"){
+                $query=$query->where(function($q){
+                    $q->where("hasil_berat_badan_per_umur", "gizi_baik")
+                        ->where("hasil_status_gizi", "!=", "T");
+                });
+            }
+        }
         //--q
-        $query=$query->where(function($q)use($params){
-            return $q->where("data_anak->nik", "like", "%".$params['q']."%")
-                ->orWhere("data_anak->nama_lengkap", "like", "%".$params['q']."%");
-        });
+        $query=$query->where("data_anak->nama_lengkap", "like", "%".$params['q']."%");
         //--order
         $query=$query->orderByDesc("id_skrining_balita");
 
@@ -59,6 +111,7 @@ class SkriningBalitaRepo{
     {
         //query
         $query=SkriningBalitaModel::where($column, $skrining_id);
+        $query=$query->orderByDesc("id_skrining_balita");
 
         //return
         return optional($query->first())->toArray();
@@ -109,6 +162,8 @@ class SkriningBalitaRepo{
     public static function table_bb_tb_024_perempuan()
     {
         $data=json_decode('[{"tinggi":45,"min3sd":1.9,"min2sd":2.1,"min1sd":2.3,"median":2.5,"1sd":2.7,"2sd":3,"3sd":3.3},{"tinggi":45.5,"min3sd":2,"min2sd":2.1,"min1sd":2.3,"median":2.5,"1sd":2.8,"2sd":3.1,"3sd":3.4},{"tinggi":46,"min3sd":2,"min2sd":2.2,"min1sd":2.4,"median":2.6,"1sd":2.9,"2sd":3.2,"3sd":3.5},{"tinggi":46.5,"min3sd":2.1,"min2sd":2.3,"min1sd":2.5,"median":2.7,"1sd":3,"2sd":3.3,"3sd":3.6},{"tinggi":47,"min3sd":2.2,"min2sd":2.4,"min1sd":2.6,"median":2.8,"1sd":3.1,"2sd":3.4,"3sd":3.7},{"tinggi":47.5,"min3sd":2.2,"min2sd":2.4,"min1sd":2.6,"median":2.9,"1sd":3.2,"2sd":3.5,"3sd":3.8},{"tinggi":48,"min3sd":2.3,"min2sd":2.5,"min1sd":2.7,"median":3,"1sd":3.3,"2sd":3.6,"3sd":4},{"tinggi":48.5,"min3sd":2.4,"min2sd":2.6,"min1sd":2.8,"median":3.1,"1sd":3.4,"2sd":3.7,"3sd":4.1},{"tinggi":49,"min3sd":2.4,"min2sd":2.6,"min1sd":2.9,"median":3.2,"1sd":3.5,"2sd":3.8,"3sd":4.2},{"tinggi":49.5,"min3sd":2.5,"min2sd":2.7,"min1sd":3,"median":3.3,"1sd":3.6,"2sd":3.9,"3sd":4.3},{"tinggi":50,"min3sd":2.6,"min2sd":2.8,"min1sd":3.1,"median":3.4,"1sd":3.7,"2sd":4,"3sd":4.5},{"tinggi":50.5,"min3sd":2.7,"min2sd":2.9,"min1sd":3.2,"median":3.5,"1sd":3.8,"2sd":4.2,"3sd":4.6},{"tinggi":51,"min3sd":2.8,"min2sd":3,"min1sd":3.3,"median":3.6,"1sd":3.9,"2sd":4.3,"3sd":4.8},{"tinggi":51.5,"min3sd":2.8,"min2sd":3.1,"min1sd":3.4,"median":3.7,"1sd":4,"2sd":4.4,"3sd":4.9},{"tinggi":52,"min3sd":2.9,"min2sd":3.2,"min1sd":3.5,"median":3.8,"1sd":4.2,"2sd":4.6,"3sd":5.1},{"tinggi":52.5,"min3sd":3,"min2sd":3.3,"min1sd":3.6,"median":3.9,"1sd":4.3,"2sd":4.7,"3sd":5.2},{"tinggi":53,"min3sd":3.1,"min2sd":3.4,"min1sd":3.7,"median":4,"1sd":4.4,"2sd":4.9,"3sd":5.4},{"tinggi":53.5,"min3sd":3.2,"min2sd":3.5,"min1sd":3.8,"median":4.2,"1sd":4.6,"2sd":5,"3sd":5.5},{"tinggi":54,"min3sd":3.3,"min2sd":3.6,"min1sd":3.9,"median":4.3,"1sd":4.7,"2sd":5.2,"3sd":5.7},{"tinggi":54.5,"min3sd":3.4,"min2sd":3.7,"min1sd":4,"median":4.4,"1sd":4.8,"2sd":5.3,"3sd":5.9},{"tinggi":55,"min3sd":3.5,"min2sd":3.8,"min1sd":4.2,"median":4.5,"1sd":5,"2sd":5.5,"3sd":6.1},{"tinggi":55.5,"min3sd":3.6,"min2sd":3.9,"min1sd":4.3,"median":4.7,"1sd":5.1,"2sd":5.7,"3sd":6.3},{"tinggi":56,"min3sd":3.7,"min2sd":4,"min1sd":4.4,"median":4.8,"1sd":5.3,"2sd":5.8,"3sd":6.4},{"tinggi":56.5,"min3sd":3.8,"min2sd":4.1,"min1sd":4.5,"median":5,"1sd":5.4,"2sd":6,"3sd":6.6},{"tinggi":57,"min3sd":3.9,"min2sd":4.3,"min1sd":4.6,"median":5.1,"1sd":5.6,"2sd":6.1,"3sd":6.8},{"tinggi":57.5,"min3sd":4,"min2sd":4.4,"min1sd":4.8,"median":5.2,"1sd":5.7,"2sd":6.3,"3sd":7},{"tinggi":58,"min3sd":4.1,"min2sd":4.5,"min1sd":4.9,"median":5.4,"1sd":5.9,"2sd":6.5,"3sd":7.1},{"tinggi":58.5,"min3sd":4.2,"min2sd":4.6,"min1sd":5,"median":5.5,"1sd":6,"2sd":6.6,"3sd":7.3},{"tinggi":59,"min3sd":4.3,"min2sd":4.7,"min1sd":5.1,"median":5.6,"1sd":6.2,"2sd":6.8,"3sd":7.5},{"tinggi":59.5,"min3sd":4.4,"min2sd":4.8,"min1sd":5.3,"median":5.7,"1sd":6.3,"2sd":6.9,"3sd":7.7},{"tinggi":60,"min3sd":4.5,"min2sd":4.9,"min1sd":5.4,"median":5.9,"1sd":6.4,"2sd":7.1,"3sd":7.8},{"tinggi":60.5,"min3sd":4.6,"min2sd":5,"min1sd":5.5,"median":6,"1sd":6.6,"2sd":7.3,"3sd":8},{"tinggi":61,"min3sd":4.7,"min2sd":5.1,"min1sd":5.6,"median":6.1,"1sd":6.7,"2sd":7.4,"3sd":8.2},{"tinggi":61.5,"min3sd":4.8,"min2sd":5.2,"min1sd":5.7,"median":6.3,"1sd":6.9,"2sd":7.6,"3sd":8.4},{"tinggi":62,"min3sd":4.9,"min2sd":5.3,"min1sd":5.8,"median":6.4,"1sd":7,"2sd":7.7,"3sd":8.5},{"tinggi":62.5,"min3sd":5,"min2sd":5.4,"min1sd":5.9,"median":6.5,"1sd":7.1,"2sd":7.8,"3sd":8.7},{"tinggi":63,"min3sd":5.1,"min2sd":5.5,"min1sd":6,"median":6.6,"1sd":7.3,"2sd":8,"3sd":8.8},{"tinggi":63.5,"min3sd":5.2,"min2sd":5.6,"min1sd":6.2,"median":6.7,"1sd":7.4,"2sd":8.1,"3sd":9},{"tinggi":64,"min3sd":5.3,"min2sd":5.7,"min1sd":6.3,"median":6.9,"1sd":7.5,"2sd":8.3,"3sd":9.1},{"tinggi":64.5,"min3sd":5.4,"min2sd":5.8,"min1sd":6.4,"median":7,"1sd":7.6,"2sd":8.4,"3sd":9.3},{"tinggi":65,"min3sd":5.5,"min2sd":5.9,"min1sd":6.5,"median":7.1,"1sd":7.8,"2sd":8.6,"3sd":9.5},{"tinggi":65.5,"min3sd":5.5,"min2sd":6,"min1sd":6.6,"median":7.2,"1sd":7.9,"2sd":8.7,"3sd":9.6},{"tinggi":66,"min3sd":5.6,"min2sd":6.1,"min1sd":6.7,"median":7.3,"1sd":8,"2sd":8.8,"3sd":9.8},{"tinggi":66.5,"min3sd":5.7,"min2sd":6.2,"min1sd":6.8,"median":7.4,"1sd":8.1,"2sd":9,"3sd":9.9},{"tinggi":67,"min3sd":5.8,"min2sd":6.3,"min1sd":6.9,"median":7.5,"1sd":8.3,"2sd":9.1,"3sd":10},{"tinggi":67.5,"min3sd":5.9,"min2sd":6.4,"min1sd":7,"median":7.6,"1sd":8.4,"2sd":9.2,"3sd":10.2},{"tinggi":68,"min3sd":6,"min2sd":6.5,"min1sd":7.1,"median":7.7,"1sd":8.5,"2sd":9.4,"3sd":10.3},{"tinggi":68.5,"min3sd":6.1,"min2sd":6.6,"min1sd":7.2,"median":7.9,"1sd":8.6,"2sd":9.5,"3sd":10.5},{"tinggi":69,"min3sd":6.1,"min2sd":6.7,"min1sd":7.3,"median":8,"1sd":8.7,"2sd":9.6,"3sd":10.6},{"tinggi":69.5,"min3sd":6.2,"min2sd":6.8,"min1sd":7.4,"median":8.1,"1sd":8.8,"2sd":9.7,"3sd":10.7},{"tinggi":70,"min3sd":6.3,"min2sd":6.9,"min1sd":7.5,"median":8.2,"1sd":9,"2sd":9.9,"3sd":10.9},{"tinggi":70.5,"min3sd":6.4,"min2sd":6.9,"min1sd":7.6,"median":8.3,"1sd":9.1,"2sd":10,"3sd":11},{"tinggi":71,"min3sd":6.5,"min2sd":7,"min1sd":7.7,"median":8.4,"1sd":9.2,"2sd":10.1,"3sd":11.1},{"tinggi":71.5,"min3sd":6.5,"min2sd":7.1,"min1sd":7.7,"median":8.5,"1sd":9.3,"2sd":10.2,"3sd":11.3},{"tinggi":72,"min3sd":6.6,"min2sd":7.2,"min1sd":7.8,"median":8.6,"1sd":9.4,"2sd":10.3,"3sd":11.4},{"tinggi":72.5,"min3sd":6.7,"min2sd":7.3,"min1sd":7.9,"median":8.7,"1sd":9.5,"2sd":10.5,"3sd":11.5},{"tinggi":73,"min3sd":6.8,"min2sd":7.4,"min1sd":8,"median":8.8,"1sd":9.6,"2sd":10.6,"3sd":11.7},{"tinggi":73.5,"min3sd":6.9,"min2sd":7.4,"min1sd":8.1,"median":8.9,"1sd":9.7,"2sd":10.7,"3sd":11.8},{"tinggi":74,"min3sd":6.9,"min2sd":7.5,"min1sd":8.2,"median":9,"1sd":9.8,"2sd":10.8,"3sd":11.9},{"tinggi":74.5,"min3sd":7,"min2sd":7.6,"min1sd":8.3,"median":9.1,"1sd":9.9,"2sd":10.9,"3sd":12},{"tinggi":75,"min3sd":7.1,"min2sd":7.7,"min1sd":8.4,"median":9.1,"1sd":10,"2sd":11,"3sd":12.2},{"tinggi":75.5,"min3sd":7.1,"min2sd":7.8,"min1sd":8.5,"median":9.2,"1sd":10.1,"2sd":11.1,"3sd":12.3},{"tinggi":76,"min3sd":7.2,"min2sd":7.8,"min1sd":8.5,"median":9.3,"1sd":10.2,"2sd":11.2,"3sd":12.4},{"tinggi":76.5,"min3sd":7.3,"min2sd":7.9,"min1sd":8.6,"median":9.4,"1sd":10.3,"2sd":11.4,"3sd":12.5},{"tinggi":77,"min3sd":7.4,"min2sd":8,"min1sd":8.7,"median":9.5,"1sd":10.4,"2sd":11.5,"3sd":12.6},{"tinggi":77.5,"min3sd":7.4,"min2sd":8.1,"min1sd":8.8,"median":9.6,"1sd":10.5,"2sd":11.6,"3sd":12.8},{"tinggi":78,"min3sd":7.5,"min2sd":8.2,"min1sd":8.9,"median":9.7,"1sd":10.6,"2sd":11.7,"3sd":12.9},{"tinggi":78.5,"min3sd":7.6,"min2sd":8.2,"min1sd":9,"median":9.8,"1sd":10.7,"2sd":11.8,"3sd":13},{"tinggi":79,"min3sd":7.7,"min2sd":8.3,"min1sd":9.1,"median":9.9,"1sd":10.8,"2sd":11.9,"3sd":13.1},{"tinggi":79.5,"min3sd":7.7,"min2sd":8.4,"min1sd":9.1,"median":10,"1sd":10.9,"2sd":12,"3sd":13.3},{"tinggi":80,"min3sd":7.8,"min2sd":8.5,"min1sd":9.2,"median":10.1,"1sd":11,"2sd":12.1,"3sd":13.4},{"tinggi":80.5,"min3sd":7.9,"min2sd":8.6,"min1sd":9.3,"median":10.2,"1sd":11.2,"2sd":12.3,"3sd":13.5},{"tinggi":81,"min3sd":8,"min2sd":8.7,"min1sd":9.4,"median":10.3,"1sd":11.3,"2sd":12.4,"3sd":13.7},{"tinggi":81.5,"min3sd":8.1,"min2sd":8.8,"min1sd":9.5,"median":10.4,"1sd":11.4,"2sd":12.5,"3sd":13.8},{"tinggi":82,"min3sd":8.1,"min2sd":8.8,"min1sd":9.6,"median":10.5,"1sd":11.5,"2sd":12.6,"3sd":13.9},{"tinggi":82.5,"min3sd":8.2,"min2sd":8.9,"min1sd":9.7,"median":10.6,"1sd":11.6,"2sd":12.8,"3sd":14.1},{"tinggi":83,"min3sd":8.3,"min2sd":9,"min1sd":9.8,"median":10.7,"1sd":11.8,"2sd":12.9,"3sd":14.2},{"tinggi":83.5,"min3sd":8.4,"min2sd":9.1,"min1sd":9.9,"median":10.9,"1sd":11.9,"2sd":13.1,"3sd":14.4},{"tinggi":84,"min3sd":8.5,"min2sd":9.2,"min1sd":10.1,"median":11,"1sd":12,"2sd":13.2,"3sd":14.5},{"tinggi":84.5,"min3sd":8.6,"min2sd":9.3,"min1sd":10.2,"median":11.1,"1sd":12.1,"2sd":13.3,"3sd":14.7},{"tinggi":85,"min3sd":8.7,"min2sd":9.4,"min1sd":10.3,"median":11.2,"1sd":12.3,"2sd":13.5,"3sd":14.9},{"tinggi":85.5,"min3sd":8.8,"min2sd":9.5,"min1sd":10.4,"median":11.3,"1sd":12.4,"2sd":13.6,"3sd":15},{"tinggi":86,"min3sd":8.9,"min2sd":9.7,"min1sd":10.5,"median":11.5,"1sd":12.6,"2sd":13.8,"3sd":15.2},{"tinggi":86.5,"min3sd":9,"min2sd":9.8,"min1sd":10.6,"median":11.6,"1sd":12.7,"2sd":13.9,"3sd":15.4},{"tinggi":87,"min3sd":9.1,"min2sd":9.9,"min1sd":10.7,"median":11.7,"1sd":12.8,"2sd":14.1,"3sd":15.5},{"tinggi":87.5,"min3sd":9.2,"min2sd":10,"min1sd":10.9,"median":11.8,"1sd":13,"2sd":14.2,"3sd":15.7},{"tinggi":88,"min3sd":9.3,"min2sd":10.1,"min1sd":11,"median":12,"1sd":13.1,"2sd":14.4,"3sd":15.9},{"tinggi":88.5,"min3sd":9.4,"min2sd":10.2,"min1sd":11.1,"median":12.1,"1sd":13.2,"2sd":14.5,"3sd":16},{"tinggi":89,"min3sd":9.5,"min2sd":10.3,"min1sd":11.2,"median":12.2,"1sd":13.4,"2sd":14.7,"3sd":16.2},{"tinggi":89.5,"min3sd":9.6,"min2sd":10.4,"min1sd":11.3,"median":12.3,"1sd":13.5,"2sd":14.8,"3sd":16.4},{"tinggi":90,"min3sd":9.7,"min2sd":10.5,"min1sd":11.4,"median":12.5,"1sd":13.7,"2sd":15,"3sd":16.5},{"tinggi":90.5,"min3sd":9.8,"min2sd":10.6,"min1sd":11.5,"median":12.6,"1sd":13.8,"2sd":15.1,"3sd":16.7},{"tinggi":91,"min3sd":9.9,"min2sd":10.7,"min1sd":11.7,"median":12.7,"1sd":13.9,"2sd":15.3,"3sd":16.9},{"tinggi":91.5,"min3sd":10,"min2sd":10.8,"min1sd":11.8,"median":12.8,"1sd":14.1,"2sd":15.5,"3sd":17},{"tinggi":92,"min3sd":10.1,"min2sd":10.9,"min1sd":11.9,"median":13,"1sd":14.2,"2sd":15.6,"3sd":17.2},{"tinggi":92.5,"min3sd":10.1,"min2sd":11,"min1sd":12,"median":13.1,"1sd":14.3,"2sd":15.8,"3sd":17.4},{"tinggi":93,"min3sd":10.2,"min2sd":11.1,"min1sd":12.1,"median":13.2,"1sd":14.5,"2sd":15.9,"3sd":17.5},{"tinggi":93.5,"min3sd":10.3,"min2sd":11.2,"min1sd":12.2,"median":13.3,"1sd":14.6,"2sd":16.1,"3sd":17.7},{"tinggi":94,"min3sd":10.4,"min2sd":11.3,"min1sd":12.3,"median":13.5,"1sd":14.7,"2sd":16.2,"3sd":17.9},{"tinggi":94.5,"min3sd":10.5,"min2sd":11.4,"min1sd":12.4,"median":13.6,"1sd":14.9,"2sd":16.4,"3sd":18},{"tinggi":95,"min3sd":10.6,"min2sd":11.5,"min1sd":12.6,"median":13.7,"1sd":15,"2sd":16.5,"3sd":18.2},{"tinggi":95.5,"min3sd":10.7,"min2sd":11.6,"min1sd":12.7,"median":13.8,"1sd":15.2,"2sd":16.7,"3sd":18.4},{"tinggi":96,"min3sd":10.8,"min2sd":11.7,"min1sd":12.8,"median":14,"1sd":15.3,"2sd":16.8,"3sd":18.6},{"tinggi":96.5,"min3sd":10.9,"min2sd":11.8,"min1sd":12.9,"median":14.1,"1sd":15.4,"2sd":17,"3sd":18.7},{"tinggi":97,"min3sd":11,"min2sd":12,"min1sd":13,"median":14.2,"1sd":15.6,"2sd":17.1,"3sd":18.9},{"tinggi":97.5,"min3sd":11.1,"min2sd":12.1,"min1sd":13.1,"median":14.4,"1sd":15.7,"2sd":17.3,"3sd":19.1},{"tinggi":98,"min3sd":11.2,"min2sd":12.2,"min1sd":13.3,"median":14.5,"1sd":15.9,"2sd":17.5,"3sd":19.3},{"tinggi":98.5,"min3sd":11.3,"min2sd":12.3,"min1sd":13.4,"median":14.6,"1sd":16,"2sd":17.6,"3sd":19.5},{"tinggi":99,"min3sd":11.4,"min2sd":12.4,"min1sd":13.5,"median":14.8,"1sd":16.2,"2sd":17.8,"3sd":19.6},{"tinggi":99.5,"min3sd":11.5,"min2sd":12.5,"min1sd":13.6,"median":14.9,"1sd":16.3,"2sd":18,"3sd":19.8},{"tinggi":100,"min3sd":11.6,"min2sd":12.6,"min1sd":13.7,"median":15,"1sd":16.5,"2sd":18.1,"3sd":20},{"tinggi":100.5,"min3sd":11.7,"min2sd":12.7,"min1sd":13.9,"median":15.2,"1sd":16.6,"2sd":18.3,"3sd":20.2},{"tinggi":101,"min3sd":11.8,"min2sd":12.8,"min1sd":14,"median":15.3,"1sd":16.8,"2sd":18.5,"3sd":20.4},{"tinggi":101.5,"min3sd":11.9,"min2sd":13,"min1sd":14.1,"median":15.5,"1sd":17,"2sd":18.7,"3sd":20.6},{"tinggi":102,"min3sd":12,"min2sd":13.1,"min1sd":14.3,"median":15.6,"1sd":17.1,"2sd":18.9,"3sd":20.8},{"tinggi":102.5,"min3sd":12.1,"min2sd":13.2,"min1sd":14.4,"median":15.8,"1sd":17.3,"2sd":19,"3sd":21},{"tinggi":103,"min3sd":12.3,"min2sd":13.3,"min1sd":14.5,"median":15.9,"1sd":17.5,"2sd":19.2,"3sd":21.3},{"tinggi":103.5,"min3sd":12.4,"min2sd":13.5,"min1sd":14.7,"median":16.1,"1sd":17.6,"2sd":19.4,"3sd":21.5},{"tinggi":104,"min3sd":12.5,"min2sd":13.6,"min1sd":14.8,"median":16.2,"1sd":17.8,"2sd":19.6,"3sd":21.7},{"tinggi":104.5,"min3sd":12.6,"min2sd":13.7,"min1sd":15,"median":16.4,"1sd":18,"2sd":19.8,"3sd":21.9},{"tinggi":105,"min3sd":12.7,"min2sd":13.8,"min1sd":15.1,"median":16.5,"1sd":18.2,"2sd":20,"3sd":22.2},{"tinggi":105.5,"min3sd":12.8,"min2sd":14,"min1sd":15.3,"median":16.7,"1sd":18.4,"2sd":20.2,"3sd":22.4},{"tinggi":106,"min3sd":13,"min2sd":14.1,"min1sd":15.4,"median":16.9,"1sd":18.5,"2sd":20.5,"3sd":22.6},{"tinggi":106.5,"min3sd":13.1,"min2sd":14.3,"min1sd":15.6,"median":17.1,"1sd":18.7,"2sd":20.7,"3sd":22.9},{"tinggi":107,"min3sd":13.2,"min2sd":14.4,"min1sd":15.7,"median":17.2,"1sd":18.9,"2sd":20.9,"3sd":23.1},{"tinggi":107.5,"min3sd":13.3,"min2sd":14.5,"min1sd":15.9,"median":17.4,"1sd":19.1,"2sd":21.1,"3sd":23.4},{"tinggi":108,"min3sd":13.5,"min2sd":14.7,"min1sd":16,"median":17.6,"1sd":19.3,"2sd":21.3,"3sd":23.6},{"tinggi":108.5,"min3sd":13.6,"min2sd":14.8,"min1sd":16.2,"median":17.8,"1sd":19.5,"2sd":21.6,"3sd":23.9},{"tinggi":109,"min3sd":13.7,"min2sd":15,"min1sd":16.4,"median":18,"1sd":19.7,"2sd":21.8,"3sd":24.2},{"tinggi":109.5,"min3sd":13.9,"min2sd":15.1,"min1sd":16.5,"median":18.1,"1sd":20,"2sd":22,"3sd":24.4},{"tinggi":110,"min3sd":14,"min2sd":15.3,"min1sd":16.7,"median":18.3,"1sd":20.2,"2sd":22.3,"3sd":24.7}]', true);
+
+        return $data;
     }
 
     public static function table_bb_tb_2460_perempuan()
@@ -116,6 +171,103 @@ class SkriningBalitaRepo{
         $data=json_decode('[{"tinggi":65,"min3sd":5.6,"min2sd":6.1,"min1sd":6.6,"median":7.2,"1sd":7.9,"2sd":8.7,"3sd":9.7},{"tinggi":65.5,"min3sd":5.7,"min2sd":6.2,"min1sd":6.7,"median":7.4,"1sd":8.1,"2sd":8.9,"3sd":9.8},{"tinggi":66,"min3sd":5.8,"min2sd":6.3,"min1sd":6.8,"median":7.5,"1sd":8.2,"2sd":9,"3sd":10},{"tinggi":66.5,"min3sd":5.8,"min2sd":6.4,"min1sd":6.9,"median":7.6,"1sd":8.3,"2sd":9.1,"3sd":10.1},{"tinggi":67,"min3sd":5.9,"min2sd":6.4,"min1sd":7,"median":7.7,"1sd":8.4,"2sd":9.3,"3sd":10.2},{"tinggi":67.5,"min3sd":6,"min2sd":6.5,"min1sd":7.1,"median":7.8,"1sd":8.5,"2sd":9.4,"3sd":10.4},{"tinggi":68,"min3sd":6.1,"min2sd":6.6,"min1sd":7.2,"median":7.9,"1sd":8.7,"2sd":9.5,"3sd":10.5},{"tinggi":68.5,"min3sd":6.2,"min2sd":6.7,"min1sd":7.3,"median":8,"1sd":8.8,"2sd":9.7,"3sd":10.7},{"tinggi":69,"min3sd":6.3,"min2sd":6.8,"min1sd":7.4,"median":8.1,"1sd":8.9,"2sd":9.8,"3sd":10.8},{"tinggi":69.5,"min3sd":6,"min2sd":6.9,"min1sd":7.5,"median":8.2,"1sd":9,"2sd":9.9,"3sd":10.9},{"tinggi":70,"min3sd":6.4,"min2sd":7,"min1sd":7.6,"median":8.3,"1sd":9.1,"2sd":10,"3sd":11.1},{"tinggi":70.5,"min3sd":6.5,"min2sd":7.1,"min1sd":7.7,"median":8.4,"1sd":9.2,"2sd":10.1,"3sd":11.2},{"tinggi":71,"min3sd":6.6,"min2sd":7.1,"min1sd":7.8,"median":8.5,"1sd":9.3,"2sd":10.3,"3sd":11.3},{"tinggi":71.5,"min3sd":6.7,"min2sd":7.2,"min1sd":7.9,"median":8.6,"1sd":9.4,"2sd":10.4,"3sd":11.5},{"tinggi":72,"min3sd":6.7,"min2sd":7.3,"min1sd":8,"median":8.7,"1sd":9.5,"2sd":10.5,"3sd":11.6},{"tinggi":72.5,"min3sd":6.8,"min2sd":7.4,"min1sd":8.1,"median":8.8,"1sd":9.7,"2sd":10.6,"3sd":11.7},{"tinggi":73,"min3sd":6.9,"min2sd":7.5,"min1sd":8.1,"median":8.9,"1sd":9.8,"2sd":10.7,"3sd":11.8},{"tinggi":73.5,"min3sd":7,"min2sd":7.6,"min1sd":8.2,"median":9,"1sd":9.9,"2sd":10.8,"3sd":12},{"tinggi":74,"min3sd":7,"min2sd":7.6,"min1sd":8.3,"median":9.1,"1sd":10,"2sd":11,"3sd":12.1},{"tinggi":74.5,"min3sd":7.1,"min2sd":7.7,"min1sd":8.4,"median":9.2,"1sd":10.1,"2sd":11.1,"3sd":12.2},{"tinggi":75,"min3sd":7.2,"min2sd":7.8,"min1sd":8.5,"median":9.3,"1sd":10.2,"2sd":11.2,"3sd":12.3},{"tinggi":75.5,"min3sd":7.2,"min2sd":7.9,"min1sd":8.6,"median":9.4,"1sd":10.3,"2sd":11.3,"3sd":12.5},{"tinggi":76,"min3sd":7.3,"min2sd":8,"min1sd":8.7,"median":9.5,"1sd":10.4,"2sd":11.4,"3sd":12.6},{"tinggi":76.5,"min3sd":7.4,"min2sd":8,"min1sd":8.7,"median":9.6,"1sd":10.5,"2sd":11.5,"3sd":12.7},{"tinggi":77,"min3sd":7.5,"min2sd":8.1,"min1sd":8.8,"median":9.6,"1sd":10.6,"2sd":11.6,"3sd":12.8},{"tinggi":77.5,"min3sd":7.5,"min2sd":8.2,"min1sd":8.9,"median":9.7,"1sd":10.7,"2sd":11.7,"3sd":12.9},{"tinggi":78,"min3sd":7.6,"min2sd":8.3,"min1sd":9,"median":9.8,"1sd":10.8,"2sd":11.8,"3sd":13.1},{"tinggi":78.5,"min3sd":7.7,"min2sd":8.4,"min1sd":9.1,"median":9.9,"1sd":10.9,"2sd":12,"3sd":13.2},{"tinggi":79,"min3sd":7.8,"min2sd":8.4,"min1sd":9.2,"median":10,"1sd":11,"2sd":12.1,"3sd":13.3},{"tinggi":79.5,"min3sd":7.8,"min2sd":8.5,"min1sd":9.3,"median":10.1,"1sd":11.1,"2sd":12.2,"3sd":13.4},{"tinggi":80,"min3sd":7.9,"min2sd":8.6,"min1sd":9.4,"median":10.2,"1sd":11.2,"2sd":12.3,"3sd":13.6},{"tinggi":80.5,"min3sd":8,"min2sd":8.7,"min1sd":9.5,"median":10.3,"1sd":11.3,"2sd":12.4,"3sd":13.7},{"tinggi":81,"min3sd":8.1,"min2sd":8.8,"min1sd":9.6,"median":10.4,"1sd":11.4,"2sd":12.6,"3sd":13.9},{"tinggi":81.5,"min3sd":8.2,"min2sd":8.9,"min1sd":9.7,"median":10.6,"1sd":11.6,"2sd":12.7,"3sd":14},{"tinggi":82,"min3sd":8.3,"min2sd":9,"min1sd":9.8,"median":10.7,"1sd":11.7,"2sd":12.8,"3sd":14.1},{"tinggi":82.5,"min3sd":8.4,"min2sd":9.1,"min1sd":9.9,"median":10.8,"1sd":11.8,"2sd":13,"3sd":14.3},{"tinggi":83,"min3sd":8.5,"min2sd":9.2,"min1sd":10,"median":10.9,"1sd":11.9,"2sd":13.1,"3sd":14.5},{"tinggi":83.5,"min3sd":8.5,"min2sd":9.3,"min1sd":10.1,"median":11,"1sd":12.1,"2sd":13.3,"3sd":14.6},{"tinggi":84,"min3sd":8.6,"min2sd":9.4,"min1sd":10.2,"median":11.1,"1sd":12.2,"2sd":13.4,"3sd":14.8},{"tinggi":84.5,"min3sd":8.7,"min2sd":9.5,"min1sd":10.3,"median":11.3,"1sd":12.3,"2sd":13.5,"3sd":14.9},{"tinggi":85,"min3sd":8.8,"min2sd":9.6,"min1sd":10.4,"median":11.4,"1sd":12.5,"2sd":13.7,"3sd":15.1},{"tinggi":85.5,"min3sd":8.9,"min2sd":9.7,"min1sd":10.6,"median":11.5,"1sd":12.6,"2sd":13.8,"3sd":15.3},{"tinggi":86,"min3sd":9,"min2sd":9.8,"min1sd":10.7,"median":11.6,"1sd":12.7,"2sd":14,"3sd":15.4},{"tinggi":86.5,"min3sd":9.1,"min2sd":9.9,"min1sd":10.8,"median":11.8,"1sd":12.9,"2sd":14.2,"3sd":15.6},{"tinggi":87,"min3sd":9.2,"min2sd":10,"min1sd":10.9,"median":11.9,"1sd":13,"2sd":14.3,"3sd":15.8},{"tinggi":87.5,"min3sd":9.3,"min2sd":10.1,"min1sd":11,"median":12,"1sd":13.2,"2sd":14.5,"3sd":15.9},{"tinggi":88,"min3sd":9.4,"min2sd":10.2,"min1sd":11.1,"median":12.1,"1sd":13.3,"2sd":14.6,"3sd":16.1},{"tinggi":88.5,"min3sd":9.5,"min2sd":10.3,"min1sd":11.2,"median":12.3,"1sd":13.4,"2sd":14.8,"3sd":16.3},{"tinggi":89,"min3sd":9.6,"min2sd":10.4,"min1sd":11.4,"median":12.4,"1sd":13.6,"2sd":14.9,"3sd":16.4},{"tinggi":89.5,"min3sd":9.7,"min2sd":10.5,"min1sd":11.5,"median":12.5,"1sd":13.7,"2sd":15.1,"3sd":16.6},{"tinggi":90,"min3sd":9.8,"min2sd":10.6,"min1sd":11.6,"median":12.6,"1sd":13.8,"2sd":15.2,"3sd":16.8},{"tinggi":90.5,"min3sd":9.9,"min2sd":10.7,"min1sd":11.7,"median":12.8,"1sd":14,"2sd":15.4,"3sd":16.9},{"tinggi":91,"min3sd":10,"min2sd":10.9,"min1sd":11.8,"median":12.9,"1sd":14.1,"2sd":15.5,"3sd":17.1},{"tinggi":91.5,"min3sd":10.1,"min2sd":11,"min1sd":11.9,"median":13,"1sd":14.3,"2sd":15.7,"3sd":17.3},{"tinggi":92,"min3sd":10.2,"min2sd":11.1,"min1sd":12,"median":13.1,"1sd":14.4,"2sd":15.8,"3sd":17.4},{"tinggi":92.5,"min3sd":10.3,"min2sd":11.2,"min1sd":12.1,"median":13.3,"1sd":14.5,"2sd":16,"3sd":17.6},{"tinggi":93,"min3sd":10.4,"min2sd":11.3,"min1sd":12.3,"median":13.4,"1sd":14.7,"2sd":16.1,"3sd":17.8},{"tinggi":93.5,"min3sd":10.5,"min2sd":11.4,"min1sd":12.4,"median":13.5,"1sd":14.8,"2sd":16.3,"3sd":17.9},{"tinggi":94,"min3sd":10.6,"min2sd":11.5,"min1sd":12.5,"median":13.6,"1sd":14.9,"2sd":16.4,"3sd":18.1},{"tinggi":94.5,"min3sd":10.7,"min2sd":11.6,"min1sd":12.6,"median":13.8,"1sd":15.1,"2sd":16.6,"3sd":18.3},{"tinggi":95,"min3sd":10.8,"min2sd":11.7,"min1sd":12.7,"median":13.9,"1sd":15.2,"2sd":16.7,"3sd":18.5},{"tinggi":95.5,"min3sd":10.8,"min2sd":11.8,"min1sd":12.8,"median":14,"1sd":15.4,"2sd":16.9,"3sd":18.6},{"tinggi":96,"min3sd":10.9,"min2sd":11.9,"min1sd":12.9,"median":14.1,"1sd":15.5,"2sd":17,"3sd":18.8},{"tinggi":96.5,"min3sd":11,"min2sd":12,"min1sd":13.1,"median":14.3,"1sd":15.6,"2sd":17.2,"3sd":19},{"tinggi":97,"min3sd":11.1,"min2sd":12.1,"min1sd":13.2,"median":14.4,"1sd":15.8,"2sd":17.4,"3sd":19.2},{"tinggi":97.5,"min3sd":11.2,"min2sd":12.2,"min1sd":13.3,"median":14.5,"1sd":15.9,"2sd":17.5,"3sd":19.3},{"tinggi":98,"min3sd":11.3,"min2sd":12.3,"min1sd":13.4,"median":14.7,"1sd":16.1,"2sd":17.7,"3sd":19.5},{"tinggi":98.5,"min3sd":11.4,"min2sd":12.4,"min1sd":13.5,"median":14.8,"1sd":16.2,"2sd":17.9,"3sd":19.7},{"tinggi":99,"min3sd":11.5,"min2sd":12.5,"min1sd":13.7,"median":14.9,"1sd":16.4,"2sd":18,"3sd":19.9},{"tinggi":99.5,"min3sd":11.6,"min2sd":12.7,"min1sd":13.8,"median":15.1,"1sd":16.5,"2sd":18.2,"3sd":20.1},{"tinggi":100,"min3sd":11.7,"min2sd":12.8,"min1sd":13.9,"median":15.2,"1sd":16.7,"2sd":18.4,"3sd":20.3},{"tinggi":100.5,"min3sd":11.9,"min2sd":12.9,"min1sd":14.1,"median":15.4,"1sd":16.9,"2sd":18.6,"3sd":20.5},{"tinggi":101,"min3sd":12,"min2sd":13,"min1sd":14.2,"median":15.5,"1sd":17,"2sd":18.7,"3sd":20.7},{"tinggi":101.5,"min3sd":12.1,"min2sd":13.1,"min1sd":14.3,"median":15.7,"1sd":17.2,"2sd":18.9,"3sd":20.9},{"tinggi":102,"min3sd":12.2,"min2sd":13.3,"min1sd":14.5,"median":15.8,"1sd":17.4,"2sd":19.1,"3sd":21.1},{"tinggi":102.5,"min3sd":12.3,"min2sd":13.4,"min1sd":14.6,"median":16,"1sd":17.5,"2sd":19.3,"3sd":21.4},{"tinggi":103,"min3sd":12.4,"min2sd":13.5,"min1sd":14.7,"median":16.1,"1sd":17.7,"2sd":19.5,"3sd":21.6},{"tinggi":103.5,"min3sd":12.5,"min2sd":13.6,"min1sd":14.9,"median":16.3,"1sd":17.9,"2sd":19.7,"3sd":21.8},{"tinggi":104,"min3sd":12.6,"min2sd":13.8,"min1sd":15,"median":16.4,"1sd":18.1,"2sd":19.9,"3sd":22},{"tinggi":104.5,"min3sd":12.8,"min2sd":13.9,"min1sd":15.2,"median":16.6,"1sd":18.2,"2sd":20.1,"3sd":22.3},{"tinggi":105,"min3sd":12.9,"min2sd":14,"min1sd":15.3,"median":16.8,"1sd":18.4,"2sd":20.3,"3sd":22.5},{"tinggi":105.5,"min3sd":13,"min2sd":14.2,"min1sd":15.5,"median":16.9,"1sd":18.6,"2sd":20.5,"3sd":22.7},{"tinggi":106,"min3sd":13.1,"min2sd":14.3,"min1sd":15.6,"median":17.1,"1sd":18.8,"2sd":20.8,"3sd":23},{"tinggi":106.5,"min3sd":13.3,"min2sd":14.5,"min1sd":15.8,"median":17.3,"1sd":19,"2sd":21,"3sd":23.2},{"tinggi":107,"min3sd":13.4,"min2sd":14.6,"min1sd":15.9,"median":17.5,"1sd":19.2,"2sd":21.2,"3sd":23.5},{"tinggi":107.5,"min3sd":13.5,"min2sd":14.7,"min1sd":16.1,"median":17.7,"1sd":19.4,"2sd":21.4,"3sd":23.7},{"tinggi":108,"min3sd":13.7,"min2sd":14.9,"min1sd":16.3,"median":17.8,"1sd":19.6,"2sd":21.7,"3sd":24},{"tinggi":108.5,"min3sd":13.8,"min2sd":15,"min1sd":16.4,"median":18,"1sd":19.8,"2sd":21.9,"3sd":24.3},{"tinggi":109,"min3sd":13.9,"min2sd":15.2,"min1sd":16.6,"median":18.2,"1sd":20,"2sd":22.1,"3sd":24.5},{"tinggi":109.5,"min3sd":14.1,"min2sd":15.4,"min1sd":16.8,"median":18.4,"1sd":20.3,"2sd":22.4,"3sd":24.8},{"tinggi":110,"min3sd":14.2,"min2sd":15.5,"min1sd":17,"median":18.6,"1sd":20.5,"2sd":22.6,"3sd":25.1},{"tinggi":110.5,"min3sd":14.4,"min2sd":15.7,"min1sd":17.1,"median":18.8,"1sd":20.7,"2sd":22.9,"3sd":25.4},{"tinggi":111,"min3sd":14.5,"min2sd":15.8,"min1sd":17.3,"median":19,"1sd":20.9,"2sd":23.1,"3sd":25.7},{"tinggi":111.5,"min3sd":14.7,"min2sd":16,"min1sd":17.5,"median":19.2,"1sd":21.2,"2sd":23.4,"3sd":26},{"tinggi":112,"min3sd":14.8,"min2sd":16.2,"min1sd":17.7,"median":19.4,"1sd":21.4,"2sd":23.6,"3sd":26.2},{"tinggi":112.5,"min3sd":15,"min2sd":16.3,"min1sd":17.9,"median":19.6,"1sd":21.6,"2sd":23.9,"3sd":26.5},{"tinggi":113,"min3sd":15.1,"min2sd":16.5,"min1sd":18,"median":19.8,"1sd":21.8,"2sd":24.2,"3sd":26.8},{"tinggi":113.5,"min3sd":15.3,"min2sd":16.7,"min1sd":18.2,"median":20,"1sd":22.1,"2sd":24.4,"3sd":27.1},{"tinggi":114,"min3sd":15.4,"min2sd":16.8,"min1sd":18.4,"median":20.2,"1sd":22.3,"2sd":24.7,"3sd":27.4},{"tinggi":114.5,"min3sd":15.6,"min2sd":17,"min1sd":18.6,"median":20.5,"1sd":22.6,"2sd":25,"3sd":27.8},{"tinggi":115,"min3sd":15.7,"min2sd":17.2,"min1sd":18.8,"median":20.7,"1sd":22.8,"2sd":25.2,"3sd":28.1},{"tinggi":115.5,"min3sd":15.9,"min2sd":17.3,"min1sd":19,"median":20.9,"1sd":23,"2sd":25.5,"3sd":28.4},{"tinggi":116,"min3sd":16,"min2sd":17.5,"min1sd":19.2,"median":21.1,"1sd":23.3,"2sd":25.8,"3sd":28.7},{"tinggi":116.5,"min3sd":16.2,"min2sd":17.7,"min1sd":19.4,"median":21.3,"1sd":23.5,"2sd":26.1,"3sd":29},{"tinggi":117,"min3sd":16.3,"min2sd":17.8,"min1sd":19.6,"median":21.5,"1sd":23.8,"2sd":26.3,"3sd":29.3},{"tinggi":117.5,"min3sd":16.5,"min2sd":18,"min1sd":19.8,"median":21.7,"1sd":24,"2sd":26.6,"3sd":29.6},{"tinggi":118,"min3sd":16.6,"min2sd":18.2,"min1sd":19.9,"median":22,"1sd":24.2,"2sd":26.9,"3sd":29.9},{"tinggi":118.5,"min3sd":16.8,"min2sd":18.4,"min1sd":20.1,"median":22.2,"1sd":24.5,"2sd":27.2,"3sd":30.3},{"tinggi":119,"min3sd":16.9,"min2sd":18.5,"min1sd":20.3,"median":22.4,"1sd":24.7,"2sd":27.4,"3sd":30.6},{"tinggi":119.5,"min3sd":17.1,"min2sd":18.7,"min1sd":20.5,"median":22.6,"1sd":25,"2sd":27.7,"3sd":30.9},{"tinggi":120,"min3sd":17.3,"min2sd":18.9,"min1sd":20.7,"median":22.8,"1sd":25.2,"2sd":28,"3sd":31.2}]', true);
 
         return $data;
+    }
+
+    public static function status_gizi_laki_laki($sbb, $umur)
+    {
+        $umur=(int)$umur;
+
+        if($umur==0 || $umur>60 || trim($sbb)==""){
+            return "O";
+        }
+        if(in_array($umur, [1, 3])){
+            if($sbb>=800) return "N";
+            else return "T";
+        }
+        if($umur==2){
+            if($sbb>=900) return "N";
+            else return "T";
+        }
+        if($umur==4){
+            if($sbb>=600) return "N";
+            else return "T";
+        }
+        if($umur==5){
+            if($sbb>=500) return "N";
+            else return "T";
+        }
+        if(in_array($umur, [6, 7])){
+            if($sbb>=400) return "N";
+            else return "T";
+        }
+        if(in_array($umur, [8, 9, 10, 11])){
+            if($sbb>=300) return "N";
+            else return "T";
+        }
+        if($umur>=12 && $umur<=60){
+            if($sbb>=200) return "N";
+            else return "T";
+        }
+    }
+    
+    public static function status_gizi_perempuan($sbb, $umur)
+    {
+        $umur=(int)$umur;
+
+        if($umur==0 || $umur>60 || trim($sbb)==""){
+            return "O";
+        }
+        if(in_array($umur, [1, 3])){
+            if($sbb>=800) return "N";
+            else return "T";
+        }
+        if($umur==2){
+            if($sbb>=900) return "N";
+            else return "T";
+        }
+        if($umur==4){
+            if($sbb>=600) return "N";
+            else return "T";
+        }
+        if($umur==5){
+            if($sbb>=500) return "N";
+            else return "T";
+        }
+        if($umur==6){
+            if($sbb>=400) return "N";
+            else return "T";
+        }
+        if(in_array($umur, [7, 8, 9, 10])){
+            if($sbb>=300) return "N";
+            else return "T";
+        }
+        if($umur>=11 && $umur<=60){
+            if($sbb>=200) return "N";
+            else return "T";
+        }
+    }
+
+    public static function generate_status_gizi($data){
+        //prev month antropometri
+        $r_bulan=SkriningBalitaModel::
+            where("data_anak->nik", $data['nik'])
+            ->where("usia_saat_ukur", $data['umur']-1)
+            ->orderBy("id_skrining_balita")
+            ->lockForUpdate()
+            ->first();
+        
+        $ssb="";
+        if(!is_null($r_bulan)){
+            $ssb=($data['berat_badan']*1000)-($r_bulan['berat_badan']*1000);
+        }
+
+        //exec
+        if($data['jenis_kelamin']=="L"){
+            return SkriningBalitaRepo::status_gizi_laki_laki($ssb, $data['umur']);
+        }
+        else{
+            return SkriningBalitaRepo::status_gizi_perempuan($ssb, $data['umur']);
+        }
     }
 
     public static function generate_antropometri_berat_badan_umur($data)
@@ -130,8 +282,15 @@ class SkriningBalitaRepo{
         $search=array_find_by_key($table, "umur", $data['umur']);
         if(isset($search['umur'])){
             $result=[];
-    
-            if($data['berat_badan']<$search['min3sd']){
+            
+            if(trim(strval($data['berat_badan']))==""){
+                $result=[
+                    'success'   =>false,
+                    'kategori'  =>"",
+                    'text'      =>""
+                ];
+            }
+            elseif($data['berat_badan']<$search['min3sd']){
                 $result=[
                     'success'   =>true,
                     'kategori'  =>"gizi_buruk",
@@ -198,8 +357,15 @@ class SkriningBalitaRepo{
         }
         if(isset($search['umur'])){
             $result=[];
-    
-            if($data['tinggi_badan']<$search['min3sd']){
+            
+            if(trim(strval($data['tinggi_badan']))==""){
+                $result=[
+                    'success'   =>false,
+                    'kategori'  =>"",
+                    'text'      =>""
+                ];
+            }
+            elseif($data['tinggi_badan']<$search['min3sd']){
                 $result=[
                     'success'   =>true,
                     'kategori'  =>"sangat_pendek",
@@ -247,10 +413,10 @@ class SkriningBalitaRepo{
     public static function generate_antropometri_berat_badan_tinggi_badan($data)
     {
         if($data['jenis_kelamin']=="L"){
-            if($data['umur']<=24){
+            if($data['umur']<=24 && $data['umur']>=0){
                 $table=SkriningBalitaRepo::table_bb_tb_024_laki_laki();
             }
-            elseif($data['umur']<=60){
+            elseif($data['umur']<=60 && $data['umur']>24){
                 $table=SkriningBalitaRepo::table_bb_tb_2460_laki_laki();
             }
             else{
@@ -258,10 +424,10 @@ class SkriningBalitaRepo{
             }
         }
         else{
-            if($data['umur']<=24){
+            if($data['umur']<=24 && $data['umur']>=0){
                 $table=SkriningBalitaRepo::table_bb_tb_024_perempuan();
             }
-            elseif($data['umur']<=60){
+            elseif($data['umur']<=60 && $data['umur']>24){
                 $table=SkriningBalitaRepo::table_bb_tb_2460_perempuan();
             }
             else{
@@ -279,6 +445,15 @@ class SkriningBalitaRepo{
         // else{
         //     $data['tinggi_badan']=(int)$data['tinggi_badan'];
         // }
+
+        if(trim(strval($data['berat_badan']))=="" || trim(strval($data['tinggi_badan']))==""){
+            return array_merge($data, [
+                'result'    =>[
+                    'kategori'  =>"",
+                    'success'   =>false
+                ]
+            ]);
+        }
 
         //hitung
         $search=array_find_by_key($table, "tinggi", $data['tinggi_badan']);

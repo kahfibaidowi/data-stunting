@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 
-class SkriningBalitaModel extends Model{
+class Stunting41182Model extends Model{
 
-    protected $table="tbl_skrining_balita";
+    protected $table="tbl_stunting_4118_2";
     protected $primaryKey="id_skrining_balita";
     protected $fillable=[
+        "id_kecamatan",
         "id_user",
         "data_anak",
         "berat_badan_lahir",
@@ -20,7 +21,9 @@ class SkriningBalitaModel extends Model{
         "hasil_tinggi_badan_per_umur",
         "hasil_berat_badan_per_umur",
         "hasil_berat_badan_per_tinggi_badan",
-        "hasil_status_gizi"
+        "bbu",
+        "tbu",
+        "bbtb"
     ];
     protected $casts=[
         "data_anak" =>"array"
@@ -35,5 +38,9 @@ class SkriningBalitaModel extends Model{
     public function user_posyandu(){
         return $this->belongsTo(UserModel::class, "id_user")
             ->where("role", "posyandu");
+    }
+    public function kecamatan(){
+        return $this->belongsTo(RegionModel::class, "id_kecamatan", "id_region")
+            ->where("type", "kecamatan");
     }
 }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id("id_skrining_balita");
             $table->unsignedBigInteger("id_user")->nullable()->comment("user posyandu");
             $table->unsignedBigInteger("id_kecamatan")->nullable()->comment("kecamatan");
-            $table->text("data_anak")->default("{}");
+            $table->text("data_anak");
             $table->double("berat_badan_lahir")->nullable();
             $table->double("tinggi_badan_lahir")->nullable();
             $table->integer("usia_saat_ukur")->nullable();

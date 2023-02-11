@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('tbl_skrining_balita', function (Blueprint $table) {
             $table->id("id_skrining_balita");
             $table->unsignedBigInteger("id_user")->nullable()->comment("user posyandu");
-            $table->text("data_anak")->default("{}")->comment("diambil dari data-kependudukan");
+            $table->text("data_anak")->comment("diambil dari data-kependudukan");
             $table->double("berat_badan_lahir");
             $table->double("tinggi_badan_lahir");
             $table->integer("usia_saat_ukur");
@@ -25,6 +25,7 @@ return new class extends Migration
             $table->text("hasil_tinggi_badan_per_umur");
             $table->text("hasil_berat_badan_per_umur");
             $table->text("hasil_berat_badan_per_tinggi_badan");
+            $table->text("hasil_status_gizi");
             $table->timestamps();
 
             

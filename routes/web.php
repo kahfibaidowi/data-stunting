@@ -61,10 +61,10 @@ $router->get("/file/show/{file}", ['uses'=>"FileController@show"]);
 $router->group(['prefix'=>'/skrining_balita', 'middleware'=>'auth'], function()use($router){
     $router->get("/", ['uses'=>"SkriningBalitaController@gets"]);
     $router->post("/", ['uses'=>"SkriningBalitaController@add"]);
-    $router->post("/type/multiple", ['uses'=>"SkriningBalitaController@add_multiple"]);
     $router->delete("/{id}", ['uses'=>"SkriningBalitaController@delete"]);
     $router->put("/{id}", ['uses'=>"SkriningBalitaController@update"]);
     $router->get("/{id}", ['uses'=>"SkriningBalitaController@get"]);
+    $router->get("/summary/formula", ['uses'=>"SkriningBalitaController@get_formula"]);
 });
 
 //STUNTING
@@ -124,4 +124,10 @@ $router->group(['prefix'=>'/home'], function()use($router){
     $router->get("/stunting_4118/summary_kecamatan", ['uses'=>"HomeController@gets_stunting_by_kecamatan"]);
     $router->get("/stunting_4118/summary_realisasi_bantuan_per_tahun", ['uses'=>"HomeController@gets_realisasi_bantuan_dinas_by_tahun"]);
     $router->get("/stunting_4118/summary_realisasi_bantuan_per_dinas", ['uses'=>"HomeController@gets_realisasi_bantuan_tahun_by_dinas"]);
+});
+
+//TEST
+$router->group(['prefix'=>'/test'], function()use($router){
+    $router->get("/test", ['uses'=>"TestController@update"]);
+    $router->get("/test2", ['uses'=>"TestController@get"]);
 });

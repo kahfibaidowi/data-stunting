@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text("nama_lengkap");
             $table->text("role");
             $table->text("avatar_url");
-            $table->text("status")->default("active");
+            $table->string("status", 100)->default("active");
             $table->timestamps();
             
             //fk
