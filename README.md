@@ -1,5 +1,12 @@
-
 # CARA INSTALL
+
+## Requirements
+
+PHP Version = 8.1
+
+MySQL Version = 10.4.24-MariaDB - mariadb.org binary distribution
+
+laravel/lumen-framework = 9.0
 
 ## Installation
 
