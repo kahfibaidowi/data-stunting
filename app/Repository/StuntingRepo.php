@@ -18,7 +18,15 @@ class StuntingRepo{
         //--count stunting
         $query=RegionModel::withCount(['posyandu as count_stunting'=>function($q){
             return $q->join(
-                \DB::raw("(select max(id_skrining_balita) as id_skrining_balita, SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), COALESCE(`id_user`, ''))), 21) as id_user, SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), data_anak)), 21) as data_anak, SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_tinggi_badan_per_umur)), 21) as hasil_tinggi_badan_per_umur from tbl_skrining_balita group by json_unquote(json_extract(`data_anak`, '$.nik')) having hasil_tinggi_badan_per_umur in ('pendek', 'sangat_pendek')) gen2_tbl_skrining_balita"),
+                \DB::raw("(select 
+                    max(usia_saat_ukur) as usia_saat_ukur, 
+                    SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), COALESCE(`id_skrining_balita`, ''))), 12) as id_skrining_balita, 
+                    SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), COALESCE(`id_user`, ''))), 12) as id_user, 
+                    SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), data_anak)), 12) as data_anak, 
+                    SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_tinggi_badan_per_umur)), 12) as hasil_tinggi_badan_per_umur 
+                from tbl_skrining_balita 
+                    group by json_unquote(json_extract(`data_anak`, '$.nik')) 
+                        having hasil_tinggi_badan_per_umur in ('pendek', 'sangat_pendek')) gen2_tbl_skrining_balita"),
                 "gen2_tbl_skrining_balita.id_user",
                 "=",
                 "tbl_users.id_user"
@@ -46,7 +54,15 @@ class StuntingRepo{
         //--count stunting
         $query=RegionModel::withCount(["posyandu_kecamatan as count_stunting"=>function($q){
             return $q->join(
-                \DB::raw("(select max(id_skrining_balita) as id_skrining_balita, SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), COALESCE(`id_user`, ''))), 21) as id_user, SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), data_anak)), 21) as data_anak, SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_tinggi_badan_per_umur)), 21) as hasil_tinggi_badan_per_umur from tbl_skrining_balita group by json_unquote(json_extract(`data_anak`, '$.nik')) having hasil_tinggi_badan_per_umur in ('pendek', 'sangat_pendek')) gen2_tbl_skrining_balita"),
+                \DB::raw("(select 
+                    max(usia_saat_ukur) as usia_saat_ukur, 
+                    SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), COALESCE(`id_skrining_balita`, ''))), 12) as id_skrining_balita, 
+                    SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), COALESCE(`id_user`, ''))), 12) as id_user, 
+                    SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), data_anak)), 12) as data_anak, 
+                    SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_tinggi_badan_per_umur)), 12) as hasil_tinggi_badan_per_umur 
+                from tbl_skrining_balita 
+                    group by json_unquote(json_extract(`data_anak`, '$.nik')) 
+                        having hasil_tinggi_badan_per_umur in ('pendek', 'sangat_pendek')) gen2_tbl_skrining_balita"),
                 "gen2_tbl_skrining_balita.id_user",
                 "=",
                 "tbl_users.id_user"
@@ -73,18 +89,18 @@ class StuntingRepo{
 
         //query
         $query=SkriningBalitaModel::selectRaw("
-            max(id_skrining_balita) as id_skrining_balita,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), COALESCE(`id_user`, ''))), 21) as id_user, 
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), data_anak)), 21) as data_anak, 
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_tinggi_badan_per_umur)), 21) as hasil_tinggi_badan_per_umur,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_berat_badan_per_umur)), 21) as hasil_berat_badan_per_umur,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_berat_badan_per_tinggi_badan)), 21) as hasil_berat_badan_per_tinggi_badan,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), tinggi_badan)), 21) as tinggi_badan,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), berat_badan)), 21) as berat_badan,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), berat_badan_lahir)), 21) as berat_badan_lahir,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), tinggi_badan_lahir)), 21) as tinggi_badan_lahir,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), created_at)), 21) as created_at,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), usia_saat_ukur)), 21) as usia_saat_ukur
+            max(usia_saat_ukur) as usia_saat_ukur,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), COALESCE(`id_skrining_balita`, ''))), 12) as id_skrining_balita, 
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), COALESCE(`id_user`, ''))), 12) as id_user, 
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), data_anak)), 12) as data_anak, 
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_tinggi_badan_per_umur)), 12) as hasil_tinggi_badan_per_umur,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_berat_badan_per_umur)), 12) as hasil_berat_badan_per_umur,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_berat_badan_per_tinggi_badan)), 12) as hasil_berat_badan_per_tinggi_badan,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), tinggi_badan)), 12) as tinggi_badan,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), berat_badan)), 12) as berat_badan,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), berat_badan_lahir)), 12) as berat_badan_lahir,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), tinggi_badan_lahir)), 12) as tinggi_badan_lahir,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), created_at)), 12) as created_at
         ")
         ->with("user_posyandu", "user_posyandu.region", "user_posyandu.region.parent")
         ->groupBy(

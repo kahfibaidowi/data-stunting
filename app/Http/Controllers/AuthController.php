@@ -202,9 +202,8 @@ class AuthController extends Controller
         }
 
         //SUCCESS
-        $url="https://api.madiunkab.go.id";
         $client=new Client([
-            'base_uri'  =>isset($req['domain'])?$req['domain']:$url
+            'base_uri'  =>isset($req['domain'])?$req['domain']:env("KEPENDUDUKAN_URL")
         ]);
 
         try{

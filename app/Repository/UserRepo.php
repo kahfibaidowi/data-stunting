@@ -56,4 +56,30 @@ class UserRepo{
         //return
         return $query->paginate($params['per_page'])->toArray();
     }
+
+    public static function gets_data_masuk($params)
+    {
+        //params
+        $params['per_page']=trim($params['per_page']);
+
+        //query
+        $query=UserModel::with("region:id_region,nested,region", "region.parent:id_region,nested,region");
+        $query=$query->withCount("skrining_balita");
+        $query=$query->where("role", "posyandu");
+        $query=$query->where("nama_lengkap", "like", "%".$params['q']."%");
+
+        $data=$query->paginate($params['per_page'])->toArray();
+
+        $new_data=[];
+        foreach($data['data'] as $val){
+            $new_data[]=array_merge_without($val, ['region'], [
+                'desa'  =>$val['region']['region'],
+                'kecamatan' =>$val['region']['parent']['region']
+            ]);
+        }
+
+        return array_merge($data, [
+            'data'  =>$new_data
+        ]);
+    }
 }

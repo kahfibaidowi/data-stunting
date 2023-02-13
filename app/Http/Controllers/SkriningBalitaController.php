@@ -60,11 +60,12 @@ class SkriningBalitaController extends Controller
                     if(!is_null($r_skrining)) return $fail("Only 1/month input skrining.");
                 }
             ],
+            'data_anak.no_kk'       =>"required",
             'data_anak.tgl_lahir'   =>"required|date_format:Y-m-d",
             'data_anak.jenis_kelamin'=>"required|in:L,P",
-            'data_anak.ibu'         =>[
-                Rule::requiredIf(!isset($req['data_anak']['ibu']))
-            ],
+            'data_anak.ibu'         =>"required",
+            'data_anak.ibu.nik'     =>"required",
+            'data_anak.ibu.nama_lengkap'=>"required",
             'berat_badan_lahir' =>"required|numeric",
             'tinggi_badan_lahir'=>"required|numeric",
             'berat_badan'   =>"required|numeric",

@@ -55,11 +55,10 @@ class TestController extends Controller
 
     public function get(Request $request)
     {
-        echo SkriningBalitaRepo::generate_antropometri_berat_badan_tinggi_badan([
-            'jenis_kelamin'=>"L",
-            'umur'  =>"80",
-            'tinggi_badan'   =>"78",
-            'berat_badan'   =>""
+        echo SkriningBalitaRepo::generate_antropometri_berat_badan_umur([
+            'jenis_kelamin'=>"P",
+            'umur'  =>"2",
+            'berat_badan'   =>null
         ])['result']['kategori'];
 
         $skrining=Stunting41182Model::get()->toArray();

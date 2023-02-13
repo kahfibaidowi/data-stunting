@@ -124,10 +124,6 @@ $router->group(['prefix'=>'/home'], function()use($router){
     $router->get("/stunting_4118/summary_kecamatan", ['uses'=>"HomeController@gets_stunting_by_kecamatan"]);
     $router->get("/stunting_4118/summary_realisasi_bantuan_per_tahun", ['uses'=>"HomeController@gets_realisasi_bantuan_dinas_by_tahun"]);
     $router->get("/stunting_4118/summary_realisasi_bantuan_per_dinas", ['uses'=>"HomeController@gets_realisasi_bantuan_tahun_by_dinas"]);
-});
-
-//TEST
-$router->group(['prefix'=>'/test'], function()use($router){
-    $router->get("/test", ['uses'=>"TestController@update"]);
-    $router->get("/test2", ['uses'=>"TestController@get"]);
+    $router->get("/skrining_balita/data_masuk", ['uses'=>"HomeController@gets_skrining_data_masuk"]);
+    $router->get("/summary_posyandu", ['uses'=>"HomeController@get_summary_posyandu"]);
 });
