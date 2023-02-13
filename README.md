@@ -1,7 +1,6 @@
 
 # CARA INSTALL
 
-ubah file .env.example menjadi .env
 ## Installation
 
 Install package pendukung dengan composer
