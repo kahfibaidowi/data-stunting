@@ -825,6 +825,86 @@
 					"response": []
 				},
 				{
+					"name": "gets grouped nik",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/skrining_balita/type/group_nik?per_page=2&q=&posyandu_id&district_id=1&village_id=&bbtb&bbu&tbu&status_gizi&tindakan&page=2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"skrining_balita",
+								"type",
+								"group_nik"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "2"
+								},
+								{
+									"key": "q",
+									"value": "",
+									"description": "pencarian"
+								},
+								{
+									"key": "posyandu_id",
+									"value": null,
+									"description": "posyandunya, tidak wajib, role posyandu wajib"
+								},
+								{
+									"key": "district_id",
+									"value": "1",
+									"description": "kecamatannya, tidak wajib"
+								},
+								{
+									"key": "village_id",
+									"value": "",
+									"description": "desanya, tidak wajib"
+								},
+								{
+									"key": "bbtb",
+									"value": null
+								},
+								{
+									"key": "bbu",
+									"value": null
+								},
+								{
+									"key": "tbu",
+									"value": null
+								},
+								{
+									"key": "status_gizi",
+									"value": null
+								},
+								{
+									"key": "tindakan",
+									"value": null
+								},
+								{
+									"key": "page",
+									"value": "2"
+								}
+							]
+						},
+						"description": "<h3 style=\"margin-bottom:0\">#Deskripsi</h3>\nmendapatkan data region berdasarkan id\n\n<h3 style=\"margin-bottom:0\">#Parameter</h3>\n- id_region=wajib"
+					},
+					"response": []
+				},
+				{
 					"name": "update skrining",
 					"request": {
 						"auth": {

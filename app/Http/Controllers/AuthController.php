@@ -211,7 +211,7 @@ class AuthController extends Controller
                 $request_data=$client->request("GET", $req['endpoint'], [
                     'query'     =>$req['params'],
                     'headers'   =>[
-                        'secret-key'=>"Rxm6pJwmx1Zrs?Lv5EHx4HSJfdgxNVYqeKbR=JeZuoCJ5Sis?LoYQMhnVYMS6wYHxCGgi98jgipMi0Tl3?/ybxClOYOlQb/lcyz!4Hakw95=rIh/FQezg!lJQxOVu=Hl8kln/QUlc-D0Xnnuj2g=6SRe6rw0pfuhfdP7NAHefDh25e-RKcwT6KvO4FeTBOUszChVBbP5zbXu72NzF2DOP!vEIjnZRY5noYxEQO3S/XVq4MRbIHbLzuZkBm0j309h"
+                        'secret-key'=>env("KEPENDUDUKAN_SECRET_KEY")
                     ]
                 ]);
                 $response=$request_data->getBody()->getContents();
@@ -221,7 +221,7 @@ class AuthController extends Controller
                 $request_data=$client->post($req['endpoint'], [
                     'json'      =>$req['params'],
                     'headers'   =>[
-                        'secret-key'    =>"Rxm6pJwmx1Zrs?Lv5EHx4HSJfdgxNVYqeKbR=JeZuoCJ5Sis?LoYQMhnVYMS6wYHxCGgi98jgipMi0Tl3?/ybxClOYOlQb/lcyz!4Hakw95=rIh/FQezg!lJQxOVu=Hl8kln/QUlc-D0Xnnuj2g=6SRe6rw0pfuhfdP7NAHefDh25e-RKcwT6KvO4FeTBOUszChVBbP5zbXu72NzF2DOP!vEIjnZRY5noYxEQO3S/XVq4MRbIHbLzuZkBm0j309h",
+                        'secret-key'    =>env("KEPENDUDUKAN_SECRET_KEY"),
                         'content-type'  =>"application/json"
                     ]
                 ]);

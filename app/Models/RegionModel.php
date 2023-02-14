@@ -33,7 +33,7 @@ class RegionModel extends Model{
     }
 
     public function posyandu(){
-        return $this->hasMany(UserModel::class, "id_region");
+        return $this->hasMany(UserModel::class, "id_region")->where("role", "posyandu");
     }
 
     public function posyandu_kecamatan(){
@@ -44,7 +44,7 @@ class RegionModel extends Model{
             "id_region",
             "id_region",
             "id_region"
-        );
+        )->where("role", "posyandu");
     }
     
     public function parent(){

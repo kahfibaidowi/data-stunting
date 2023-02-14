@@ -60,6 +60,7 @@ $router->get("/file/show/{file}", ['uses'=>"FileController@show"]);
 //SKRINING BALITA
 $router->group(['prefix'=>'/skrining_balita', 'middleware'=>'auth'], function()use($router){
     $router->get("/", ['uses'=>"SkriningBalitaController@gets"]);
+    $router->get("/type/group_nik", ['uses'=>"SkriningBalitaController@gets_group_nik"]);
     $router->post("/", ['uses'=>"SkriningBalitaController@add"]);
     $router->delete("/{id}", ['uses'=>"SkriningBalitaController@delete"]);
     $router->put("/{id}", ['uses'=>"SkriningBalitaController@update"]);

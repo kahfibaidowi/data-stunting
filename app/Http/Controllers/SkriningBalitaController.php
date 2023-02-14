@@ -451,6 +451,79 @@ class SkriningBalitaController extends Controller
             'data'          =>$skrining['data']
         ]);
     }
+    
+    public function gets_group_nik(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'dinkes', 'posyandu'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>[
+                Rule::requiredIf(!isset($req['per_page'])),
+                'integer',
+                'min:1'
+            ],
+            'q'         =>[
+                Rule::requiredIf(!isset($req['q']))
+            ],
+            'district_id'   =>[
+                Rule::requiredIf(!isset($req['district_id'])),
+                Rule::exists("\App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "kecamatan");
+                })
+            ],
+            'village_id'   =>[
+                Rule::requiredIf(!isset($req['village_id'])),
+                Rule::exists("\App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "desa");
+                })
+            ],
+            'posyandu_id'   =>[
+                Rule::requiredIf(!isset($req['posyandu_id'])),
+                Rule::exists("App\Models\UserModel", "id_user")
+            ],
+            'bbu'   =>[
+                Rule::requiredIf(!isset($req['bbu']))
+            ],
+            'tbu'   =>[
+                Rule::requiredIf(!isset($req['tbu']))
+            ],
+            'bbtb'  =>[
+                Rule::requiredIf(!isset($req['bbtb']))
+            ],
+            'status_gizi'   =>[
+                Rule::requiredIf(!isset($req['status_gizi']))
+            ],
+            'tindakan'      =>[
+                Rule::requiredIf(!isset($req['tindakan'])),
+                "in:rujuk,tidak_ada"
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()
+            ], 500);
+        }
+
+        //SUCCESS
+        $skrining=SkriningBalitaRepo::gets_skrining_group_nik($req);
+
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$skrining['current_page'],
+            'last_page'     =>$skrining['last_page'],
+            'data'          =>$skrining['data']
+        ]);
+    }
 
     public function get_formula(Request $request)
     {

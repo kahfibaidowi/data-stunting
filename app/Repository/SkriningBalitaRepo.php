@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Models\SkriningBalitaModel;
+use App\Models\RegionModel;
+use App\Models\UserModel;
 
 
 class SkriningBalitaRepo{
@@ -80,6 +82,109 @@ class SkriningBalitaRepo{
         $query=$query->orderByDesc("id_skrining_balita");
 
         //data
+        $data=$query->paginate($params['per_page'])->toArray();
+        $new_data=[];
+        foreach($data['data'] as $val){
+            if($val['user_posyandu']!=""){
+                $new_data[]=array_merge($val, [
+                    'user_posyandu' =>array_merge_without($val['user_posyandu'], ['region'], [
+                        'desa'      =>$val['user_posyandu']['region']['region'],
+                        'kecamatan' =>$val['user_posyandu']['region']['parent']['region']
+                    ])
+                ]);
+            }
+            else{
+                $new_data[]=array_merge($val, [
+                    'user_posyandu' =>[
+                        'desa'      =>null,
+                        'kecamatan' =>null,
+                        'nama_lengkap'  =>""
+                    ]
+                ]);
+            }
+        }
+
+        return array_merge($data, [
+            'data'  =>$new_data
+        ]);
+    }
+
+    public static function gets_skrining_group_nik($params)
+    {
+        //params
+        $params['per_page']=trim($params['per_page']);
+        $params['posyandu_id']=trim($params['posyandu_id']);
+        $params['district_id']=trim($params['district_id']);
+        $params['village_id']=trim($params['village_id']);
+        $params['bbu']=trim($params['bbu']);
+        $params['tbu']=trim($params['tbu']);
+        $params['bbtb']=trim($params['bbtb']);
+        $params['status_gizi']=trim($params['status_gizi']);
+        $params['tindakan']=trim($params['tindakan']);
+
+        //QUERY DESA, KECAMATAN WHERE PARAMS NOT EMPTY
+        if($params['village_id']!=""){
+            $r_region=RegionModel::with("posyandu")
+                ->where("id_region", $params['village_id'])
+                ->first();
+
+            $user_posyandu=[-1];
+            foreach($r_region['posyandu'] as $posy){
+                $user_posyandu[]=$posy['id_user'];
+            }
+        }
+        elseif($params['district_id']!=""){
+            $r_region=RegionModel::with("posyandu_kecamatan")
+                ->where("id_region", $params['district_id'])
+                ->first();
+
+            $user_posyandu=[-1];
+            foreach($r_region['posyandu_kecamatan'] as $posy){
+                $user_posyandu[]=$posy['id_user'];
+            }
+        }
+
+        //QUERY SKRINING
+        $query=SkriningBalitaModel::selectRaw("
+            max(id_skrining_balita) as id_skrining_balita,
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), COALESCE(`usia_saat_ukur`, ''))), 21) as usia_saat_ukur, 
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), COALESCE(`id_user`, ''))), 21) as id_user, 
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), data_anak)), 21) as data_anak, 
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_tinggi_badan_per_umur)), 21) as hasil_tinggi_badan_per_umur,
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_berat_badan_per_umur)), 21) as hasil_berat_badan_per_umur,
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_berat_badan_per_tinggi_badan)), 21) as hasil_berat_badan_per_tinggi_badan,
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_status_gizi)), 21) as hasil_status_gizi,
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), tinggi_badan)), 21) as tinggi_badan,
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), berat_badan)), 21) as berat_badan,
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), berat_badan_lahir)), 21) as berat_badan_lahir,
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), tinggi_badan_lahir)), 21) as tinggi_badan_lahir,
+            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), created_at)), 21) as created_at
+        ");
+        $query=$query->with("user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");
+        $query=$query->groupBy(
+            \DB::raw("json_unquote(json_extract(`data_anak`, '$.nik'))")
+        );
+        //--desa, kecamatan
+        if($params['village_id']!="" || $params['district_id']!=""){
+            $having_user_posyandu="(";
+            foreach($user_posyandu as $val){
+                if($val==-1) $having_user_posyandu.=$val;
+                else $having_user_posyandu.=",".$val;
+            }
+            $having_user_posyandu.=")";
+
+            $query=$query->havingRaw("id_user in ".$having_user_posyandu);
+        }
+        //--posyandu id
+        if($params['posyandu_id']!=""){
+            $query=$query->having("id_user", $params['posyandu_id']);
+        }
+        //--q
+        $query=$query->having("data_anak->nama_lengkap", "like", "%".$params['q']."%");
+        //--order
+        $query=$query->orderByDesc("id_skrining_balita");
+
+        //DATA
         $data=$query->paginate($params['per_page'])->toArray();
         $new_data=[];
         foreach($data['data'] as $val){
