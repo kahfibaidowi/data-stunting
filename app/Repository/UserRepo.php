@@ -64,7 +64,9 @@ class UserRepo{
 
         //query
         $query=UserModel::with("region:id_region,nested,region", "region.parent:id_region,nested,region");
-        $query=$query->withCount("skrining_balita");
+        $query=$query->withCount(["skrining_balita as count_balita"=>function($q){
+            return $q->select(\DB::raw("count(distinct(json_unquote(json_extract(`data_anak`, '$.nik'))))"));
+        }]);
         $query=$query->where("role", "posyandu");
         $query=$query->where("nama_lengkap", "like", "%".$params['q']."%");
 

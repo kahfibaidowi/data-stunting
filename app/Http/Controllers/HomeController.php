@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Carbon\Carbon;
 use App\Models\SkriningBalitaModel;
 use App\Models\UserModel;
+use App\Models\UserLoginModel;
 use App\Repository\Stunting4118Repo;
 use App\Repository\IntervensiRealisasiBantuanRepo;
 use App\Repository\UserRepo;
@@ -118,10 +120,14 @@ class HomeController extends Controller
         //SUCCESS
         $total_posyandu=UserModel::where("role", "posyandu")->count();
         $total_skrining=SkriningBalitaModel::count();
+        $total_balita=SkriningBalitaModel::select("data_anak->nik")->groupBy("data_anak->nik")->get()->count();
+        $user_online=UserLoginModel::where("updated_at", ">", Carbon::now()->subMinutes(5))->count();
 
         return response()->json([
             'total_posyandu'=>$total_posyandu,
-            'total_skrining'=>$total_skrining
+            'total_skrining'=>$total_skrining,
+            'total_balita'  =>$total_balita,
+            'total_user_online' =>$user_online
         ]);
     }
 }
