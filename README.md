@@ -21,6 +21,12 @@ Install package pendukung dengan composer
 
 rename file .env.example menjadi .env dan ubah variable yg diperlukan
 
+ubah environment ke production dengan mengubah variable
+
+APP_ENV=production
+
+APP_DEBUG=false
+
 ## Install Database
 
 jalankan perintah di terminal
