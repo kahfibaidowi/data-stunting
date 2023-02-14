@@ -181,7 +181,7 @@ class SkriningBalitaRepo{
         }
         //--bbu
         if($params['bbu']!=""){
-            $query=$query->havingRaw("hasil_berat_badan_per_umur='".$params['bbu']."'");
+            $query=$query->having("hasil_berat_badan_per_umur", $params['bbu']);
         }
         //--tbu
         if($params['tbu']!=""){
