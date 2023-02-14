@@ -36,36 +36,6 @@ class UserModel extends Model{
     }
 
     public function skrining_balita(){
-        return $this->hasMany(SkriningBalitaModel::class, "id_user");
-    }
-
-    public function intervensi_realisasi_kegiatan(){
-        return $this->hasManyThrough(
-            IntervensiRealisasiKegiatanModel::class,
-            IntervensiRencanaKegiatanModel::class,
-            "id_user",
-            "id_rencana_kegiatan",
-            "id_user",
-            "id_rencana_kegiatan"
-        );
-    }
-
-    public function intervensi_realisasi_bantuan(){
-        return $this->hasManyThrough(
-            IntervensiRealisasiBantuanModel::class,
-            IntervensiRencanaBantuanModel::class,
-            "id_user",
-            "id_rencana_bantuan",
-            "id_user",
-            "id_rencana_bantuan"
-        );
-    }
-
-    public function intervensi_rencana_kegiatan(){
-        return $this->hasMany(IntervensiRencanaKegiatanModel::class, "id_user");
-    }
-
-    public function intervensi_rencana_bantuan(){
-        return $this->hasMany(IntervensiRencanaBantuanModel::class, "id_user");
+        return $this->hasMany(BalitaSkriningModel::class, "id_user");
     }
 }

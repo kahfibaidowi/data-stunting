@@ -2,10 +2,10 @@
 
 namespace App\Repository;
 
-use App\Models\SkriningBalitaModel;
+use App\Models\BalitaSkriningModel;
 
 
-class SkriningBalitaRepo{
+class BalitaSkriningRepo{
     
     public static function gets_skrining($params)
     {
@@ -22,7 +22,15 @@ class SkriningBalitaRepo{
         $params['tindakan']=trim($params['tindakan']);
 
         //query
-        $query=SkriningBalitaModel::with("user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");
+        $query=BalitaSkriningModel::with("balita", "user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");
+        //--q
+        $query=$query->whereHas("balita", function($q)use($params){
+            $q->where("nama_lengkap", "like", "%".$params['q']."%");
+            //--nik
+            if($params['nik']!=""){
+                $q->where("nik", $params['nik']);
+            }
+        });
         //--kecamatan
         if($params['district_id']!=""){
             $query=$query->whereHas("user_posyandu.region.parent", function($q)use($params){
@@ -55,10 +63,6 @@ class SkriningBalitaRepo{
         if($params['status_gizi']!=""){
             $query=$query->where("hasil_status_gizi", $params['status_gizi']);
         }
-        //--nik
-        if($params['nik']!=""){
-            $query=$query->where("data_anak->nik", $params['nik']);
-        }
         //--tindakan
         if($params['tindakan']!=""){
             if($params['tindakan']=="rujuk"){
@@ -74,17 +78,16 @@ class SkriningBalitaRepo{
                 });
             }
         }
-        //--q
-        $query=$query->where("data_anak->nama_lengkap", "like", "%".$params['q']."%");
         //--order
-        $query=$query->orderByDesc("id_skrining_balita");
+        $query=$query->orderByDesc("id_balita_skrining");
 
         //data
         $data=$query->paginate($params['per_page'])->toArray();
         $new_data=[];
         foreach($data['data'] as $val){
             if($val['user_posyandu']!=""){
-                $new_data[]=array_merge($val, [
+                $new_data[]=array_merge_without($val, ['balita'], [
+                    'data_anak'     =>$val['balita'],
                     'user_posyandu' =>array_merge_without($val['user_posyandu'], ['region'], [
                         'desa'      =>$val['user_posyandu']['region']['region'],
                         'kecamatan' =>$val['user_posyandu']['region']['parent']['region']
@@ -92,7 +95,8 @@ class SkriningBalitaRepo{
                 ]);
             }
             else{
-                $new_data[]=array_merge($val, [
+                $new_data[]=array_merge_without($val, ['balita'], [
+                    'data_anak'     =>$val['balita'],
                     'user_posyandu' =>[
                         'desa'      =>null,
                         'kecamatan' =>null,
@@ -110,11 +114,16 @@ class SkriningBalitaRepo{
     public static function get_skrining($skrining_id, $column)
     {
         //query
-        $query=SkriningBalitaModel::where($column, $skrining_id);
-        $query=$query->orderByDesc("id_skrining_balita");
+        $query=BalitaSkriningModel::with("balita")
+            ->where($column, $skrining_id)
+            ->orderByDesc("id_balita_skrining");
 
         //return
-        return optional($query->first())->toArray();
+        $data=$query->first()->toArray();
+
+        return array_merge_without($data, ['balita'], [
+            'data_anak' =>$data['balita']
+        ]);
     }
 
     public static function table_bb_u_laki_laki()
@@ -249,10 +258,10 @@ class SkriningBalitaRepo{
 
     public static function generate_status_gizi($data){
         //prev month antropometri
-        $r_bulan=SkriningBalitaModel::
-            where("data_anak->nik", $data['nik'])
+        $r_bulan=BalitaSkriningModel::
+            where("id_balita", $data['id_balita'])
             ->where("usia_saat_ukur", $data['umur']-1)
-            ->orderBy("id_skrining_balita")
+            ->orderByDesc("id_balita_skrining")
             ->lockForUpdate()
             ->first();
         
@@ -263,20 +272,20 @@ class SkriningBalitaRepo{
 
         //exec
         if($data['jenis_kelamin']=="L"){
-            return SkriningBalitaRepo::status_gizi_laki_laki($ssb, $data['umur']);
+            return BalitaSkriningRepo::status_gizi_laki_laki($ssb, $data['umur']);
         }
         else{
-            return SkriningBalitaRepo::status_gizi_perempuan($ssb, $data['umur']);
+            return BalitaSkriningRepo::status_gizi_perempuan($ssb, $data['umur']);
         }
     }
 
     public static function generate_antropometri_berat_badan_umur($data)
     {
         if($data['jenis_kelamin']=="L"){
-            $table=SkriningBalitaRepo::table_bb_u_laki_laki();
+            $table=BalitaSkriningRepo::table_bb_u_laki_laki();
         }
         else{
-            $table=SkriningBalitaRepo::table_bb_u_perempuan();
+            $table=BalitaSkriningRepo::table_bb_u_perempuan();
         }
     
         $search=array_find_by_key($table, "umur", $data['umur']);
@@ -339,10 +348,10 @@ class SkriningBalitaRepo{
     public static function generate_antropometri_panjang_badan_umur($data)
     {
         if($data['jenis_kelamin']=="L"){
-            $table=SkriningBalitaRepo::table_pb_u_laki_laki();
+            $table=BalitaSkriningRepo::table_pb_u_laki_laki();
         }
         else{
-            $table=SkriningBalitaRepo::table_pb_u_perempuan();
+            $table=BalitaSkriningRepo::table_pb_u_perempuan();
         }
     
         $search=array_find_by_key($table, "umur", $data['umur']);
@@ -414,10 +423,10 @@ class SkriningBalitaRepo{
     {
         if($data['jenis_kelamin']=="L"){
             if($data['umur']<=24 && $data['umur']>=0){
-                $table=SkriningBalitaRepo::table_bb_tb_024_laki_laki();
+                $table=BalitaSkriningRepo::table_bb_tb_024_laki_laki();
             }
             elseif($data['umur']<=60 && $data['umur']>24){
-                $table=SkriningBalitaRepo::table_bb_tb_2460_laki_laki();
+                $table=BalitaSkriningRepo::table_bb_tb_2460_laki_laki();
             }
             else{
                 $table=[];
@@ -425,10 +434,10 @@ class SkriningBalitaRepo{
         }
         else{
             if($data['umur']<=24 && $data['umur']>=0){
-                $table=SkriningBalitaRepo::table_bb_tb_024_perempuan();
+                $table=BalitaSkriningRepo::table_bb_tb_024_perempuan();
             }
             elseif($data['umur']<=60 && $data['umur']>24){
-                $table=SkriningBalitaRepo::table_bb_tb_2460_perempuan();
+                $table=BalitaSkriningRepo::table_bb_tb_2460_perempuan();
             }
             else{
                 $table=[];

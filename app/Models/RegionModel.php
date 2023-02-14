@@ -78,19 +78,4 @@ class RegionModel extends Model{
             'id_user'
         );
     }
-
-    public function stunting_4118_kecamatan(){
-        return $this->hasMany(Stunting4118Model::class, "id_kecamatan", "id_region");
-    }
-
-    public function realisasi_bantuan_kecamatan(){
-        return $this->hasManyThrough(
-            IntervensiRealisasiBantuanModel::class,
-            Stunting4118Model::class,
-            "id_kecamatan",
-            "id_skrining_balita",
-            "id_region",
-            "id_skrining_balita"
-        );
-    }
 }

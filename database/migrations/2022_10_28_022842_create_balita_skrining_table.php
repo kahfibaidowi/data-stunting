@@ -13,12 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tbl_skrining_balita', function (Blueprint $table) {
-            $table->id("id_skrining_balita");
+        Schema::create('tbl_balita_skrining', function (Blueprint $table) {
+            $table->id("id_balita_skrining");
             $table->unsignedBigInteger("id_user")->nullable()->comment("user posyandu");
-            $table->text("data_anak")->comment("diambil dari data-kependudukan");
-            $table->double("berat_badan_lahir");
-            $table->double("tinggi_badan_lahir");
+            $table->unsignedBigInteger("id_balita");
             $table->integer("usia_saat_ukur");
             $table->double("berat_badan");
             $table->double("tinggi_badan");
@@ -31,6 +29,7 @@ return new class extends Migration
             
             //fk
             $table->foreign("id_user")->references("id_user")->on("tbl_users")->onDelete("cascade");
+            $table->foreign("id_balita")->references("id_balita")->on("tbl_balita")->onDelete("cascade");
         });
     }
 
@@ -41,6 +40,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tbl_skrining_balita');
+        Schema::dropIfExists('tbl_balita_skrining');
     }
 };
