@@ -179,6 +179,37 @@ class SkriningBalitaRepo{
         if($params['posyandu_id']!=""){
             $query=$query->having("id_user", $params['posyandu_id']);
         }
+        //--bbu
+        if($params['bbu']!=""){
+            $query=$query->havingRaw("hasil_berat_badan_per_umur='".$params['bbu']."'");
+        }
+        //--tbu
+        if($params['tbu']!=""){
+            $query=$query->having("hasil_tinggi_badan_per_umur", $params['tbu']);
+        }
+        //--bbtb
+        if($params['bbtb']!=""){
+            $query=$query->having("hasil_berat_badan_per_tinggi_badan", $params['bbtb']);
+        }
+        //--status gizi
+        if($params['status_gizi']!=""){
+            $query=$query->having("hasil_status_gizi", $params['status_gizi']);
+        }
+        //--tindakan
+        if($params['tindakan']!=""){
+            if($params['tindakan']=="rujuk"){
+                $query=$query->having(function($q){
+                    $q->having("hasil_berat_badan_per_umur", "!=", "gizi_baik")
+                        ->orHaving("hasil_status_gizi", "T");
+                });
+            }
+            elseif($params['tindakan']=="tidak_ada"){
+                $query=$query->having(function($q){
+                    $q->having("hasil_berat_badan_per_umur", "gizi_baik")
+                        ->having("hasil_status_gizi", "!=", "T");
+                });
+            }
+        }
         //--q
         $query=$query->having("data_anak->nama_lengkap", "like", "%".$params['q']."%");
         //--order
