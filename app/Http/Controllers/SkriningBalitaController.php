@@ -264,7 +264,7 @@ class SkriningBalitaController extends Controller
         $req=$request->all();
 
         //ROLE AUTHENTICATION
-        if(!in_array($login_data['role'], ['admin'])){
+        if(!in_array($login_data['role'], ['admin', 'dinkes', 'posyandu'])){
             return response()->json([
                 'error' =>"ACCESS_NOT_ALLOWED"
             ], 403);
@@ -294,8 +294,15 @@ class SkriningBalitaController extends Controller
             $skrining=SkriningBalitaModel::where("id_skrining_balita", $req['id_skrining_balita'])
                 ->lockForUpdate()
                 ->first();
+
+            SkriningBalitaModel::
+                where("data_anak->nik", $skrining['data_anak']['nik'])
+                ->where("usia_saat_ukur", $skrining['usia_saat_ukur']+1)
+                ->update([
+                    'hasil_status_gizi' =>"O"
+                ]);
             
-            SkriningBalitaModel::where("id_skrining_balita", $req['id_skrining_balita'])->delete();
+            $skrining->delete();
         });
 
         return response()->json([
