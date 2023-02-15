@@ -273,7 +273,14 @@ class SkriningBalitaController extends Controller
         //VALIDATION
         $req['id_skrining_balita']=$id;
         $validation=Validator::make($req, [
-            'id_skrining_balita'=>"required|exists:App\Models\SkriningBalitaModel,id_skrining_balita"
+            'id_skrining_balita'=>[
+                "required",
+                Rule::exists("App\Models\SkriningBalitaModel")->where(function($q)use($req, $login_data){
+                    if($login_data['role']=="posyandu"){
+                        return $q->where("id_user", $login_data['id_user']);
+                    }
+                })
+            ]
         ]);
         if($validation->fails()){
             return response()->json([
@@ -284,6 +291,10 @@ class SkriningBalitaController extends Controller
 
         //SUCCESS
         DB::transaction(function()use($req){
+            $skrining=SkriningBalitaModel::where("id_skrining_balita", $req['id_skrining_balita'])
+                ->lockForUpdate()
+                ->first();
+            
             SkriningBalitaModel::where("id_skrining_balita", $req['id_skrining_balita'])->delete();
         });
 
@@ -432,6 +443,26 @@ class SkriningBalitaController extends Controller
             'tindakan'      =>[
                 Rule::requiredIf(!isset($req['tindakan'])),
                 "in:rujuk,tidak_ada"
+            ],
+            'umur_start'    =>[
+                Rule::requiredIf(function()use($req){
+                    if(!isset($req['umur_start'])) return true;
+                    if(!isset($req['umur_end'])) return true;
+                    if(trim($req['umur_end'])!="") return true;
+                }),
+                "integer",
+                "min:0",
+                "max:60"
+            ],
+            'umur_end'    =>[
+                Rule::requiredIf(function()use($req){
+                    if(!isset($req['umur_end'])) return true;
+                    if(!isset($req['umur_start'])) return true;
+                    if(trim($req['umur_start'])!="") return true;
+                }),
+                "integer",
+                "min:0",
+                "max:60"
             ]
         ]);
         if($validation->fails()){
@@ -505,6 +536,26 @@ class SkriningBalitaController extends Controller
             'tindakan'      =>[
                 Rule::requiredIf(!isset($req['tindakan'])),
                 "in:rujuk,tidak_ada"
+            ],
+            'umur_start'    =>[
+                Rule::requiredIf(function()use($req){
+                    if(!isset($req['umur_start'])) return true;
+                    if(!isset($req['umur_end'])) return true;
+                    if(trim($req['umur_end'])!="") return true;
+                }),
+                "integer",
+                "min:0",
+                "max:60"
+            ],
+            'umur_end'    =>[
+                Rule::requiredIf(function()use($req){
+                    if(!isset($req['umur_end'])) return true;
+                    if(!isset($req['umur_start'])) return true;
+                    if(trim($req['umur_start'])!="") return true;
+                }),
+                "integer",
+                "min:0",
+                "max:60"
             ]
         ]);
         if($validation->fails()){

@@ -22,6 +22,8 @@ class SkriningBalitaRepo{
         $params['bbtb']=trim($params['bbtb']);
         $params['status_gizi']=trim($params['status_gizi']);
         $params['tindakan']=trim($params['tindakan']);
+        $params['umur_start']=trim($params['umur_start']);
+        $params['umur_end']=trim($params['umur_end']);
 
         //query
         $query=SkriningBalitaModel::with("user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");
@@ -76,6 +78,10 @@ class SkriningBalitaRepo{
                 });
             }
         }
+        //--umur start/end
+        if($params['umur_start']!="" || $params['umur_end']!=""){
+            $query=$query->whereBetween("usia_saat_ukur", [$params['umur_start'], $params['umur_end']]);
+        }
         //--q
         $query=$query->where("data_anak->nama_lengkap", "like", "%".$params['q']."%");
         //--order
@@ -121,6 +127,8 @@ class SkriningBalitaRepo{
         $params['bbtb']=trim($params['bbtb']);
         $params['status_gizi']=trim($params['status_gizi']);
         $params['tindakan']=trim($params['tindakan']);
+        $params['umur_start']=trim($params['umur_start']);
+        $params['umur_end']=trim($params['umur_end']);
 
         //QUERY DESA, KECAMATAN WHERE PARAMS NOT EMPTY
         if($params['village_id']!=""){
@@ -209,6 +217,12 @@ class SkriningBalitaRepo{
                         ->having("hasil_status_gizi", "!=", "T");
                 });
             }
+        }
+        //--umur start/end
+        if($params['umur_start']!="" || $params['umur_end']!=""){
+            $query=$query->having(function($q)use($params){
+                $q->havingRaw("usia_saat_ukur >= ".$params['umur_start']." and usia_saat_ukur <= ".$params['umur_end']);
+            });
         }
         //--q
         $query=$query->having("data_anak->nama_lengkap", "like", "%".$params['q']."%");
