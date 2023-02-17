@@ -154,19 +154,19 @@ class SkriningBalitaRepo{
 
         //QUERY SKRINING
         $query=SkriningBalitaModel::selectRaw("
-            max(id_skrining_balita) as id_skrining_balita,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), COALESCE(`usia_saat_ukur`, ''))), 21) as usia_saat_ukur, 
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), COALESCE(`id_user`, ''))), 21) as id_user, 
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), data_anak)), 21) as data_anak, 
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_tinggi_badan_per_umur)), 21) as hasil_tinggi_badan_per_umur,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_berat_badan_per_umur)), 21) as hasil_berat_badan_per_umur,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_berat_badan_per_tinggi_badan)), 21) as hasil_berat_badan_per_tinggi_badan,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), hasil_status_gizi)), 21) as hasil_status_gizi,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), tinggi_badan)), 21) as tinggi_badan,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), berat_badan)), 21) as berat_badan,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), berat_badan_lahir)), 21) as berat_badan_lahir,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), tinggi_badan_lahir)), 21) as tinggi_badan_lahir,
-            SUBSTRING(max(CONCAT(LPAD(id_skrining_balita, 20, '0'), created_at)), 21) as created_at
+            max(usia_saat_ukur) as usia_saat_ukur,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), COALESCE(`id_skrining_balita`, ''))), 12) as id_skrining_balita, 
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), COALESCE(`id_user`, ''))), 12) as id_user, 
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), data_anak)), 12) as data_anak, 
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_tinggi_badan_per_umur)), 12) as hasil_tinggi_badan_per_umur,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_berat_badan_per_umur)), 12) as hasil_berat_badan_per_umur,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_berat_badan_per_tinggi_badan)), 12) as hasil_berat_badan_per_tinggi_badan,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_status_gizi)), 12) as hasil_status_gizi,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), tinggi_badan)), 12) as tinggi_badan,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), berat_badan)), 12) as berat_badan,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), berat_badan_lahir)), 12) as berat_badan_lahir,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), tinggi_badan_lahir)), 12) as tinggi_badan_lahir,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), created_at)), 12) as created_at
         ");
         $query=$query->with("user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");
         $query=$query->groupBy(

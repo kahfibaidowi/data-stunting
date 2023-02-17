@@ -96,6 +96,7 @@ class StuntingRepo{
             SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_tinggi_badan_per_umur)), 12) as hasil_tinggi_badan_per_umur,
             SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_berat_badan_per_umur)), 12) as hasil_berat_badan_per_umur,
             SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_berat_badan_per_tinggi_badan)), 12) as hasil_berat_badan_per_tinggi_badan,
+            SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), hasil_status_gizi)), 12) as hasil_status_gizi,
             SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), tinggi_badan)), 12) as tinggi_badan,
             SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), berat_badan)), 12) as berat_badan,
             SUBSTRING(max(CONCAT(LPAD(usia_saat_ukur, 11, '0'), berat_badan_lahir)), 12) as berat_badan_lahir,
