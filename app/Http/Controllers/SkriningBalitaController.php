@@ -470,7 +470,9 @@ class SkriningBalitaController extends Controller
                 "integer",
                 "min:0",
                 "max:60"
-            ]
+            ],
+            'hide_tb_0' =>"nullable|in:y,n",
+            'hide_bb_0' =>"nullable|in:y,n"
         ]);
         if($validation->fails()){
             return response()->json([
@@ -563,7 +565,9 @@ class SkriningBalitaController extends Controller
                 "integer",
                 "min:0",
                 "max:60"
-            ]
+            ],
+            'hide_tb_0' =>"nullable|in:y,n",
+            'hide_bb_0' =>"nullable|in:y,n"
         ]);
         if($validation->fails()){
             return response()->json([

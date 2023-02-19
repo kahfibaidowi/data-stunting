@@ -24,6 +24,8 @@ class SkriningBalitaRepo{
         $params['tindakan']=trim($params['tindakan']);
         $params['umur_start']=trim($params['umur_start']);
         $params['umur_end']=trim($params['umur_end']);
+        $params['hide_tb_0']=isset($params['hide_tb_0'])?trim($params['hide_tb_0']):"";
+        $params['hide_bb_0']=isset($params['hide_bb_0'])?trim($params['hide_bb_0']):"";
 
         //query
         $query=SkriningBalitaModel::with("user_posyandu", "user_posyandu.region", "user_posyandu.region.parent");
@@ -82,6 +84,13 @@ class SkriningBalitaRepo{
         if($params['umur_start']!="" || $params['umur_end']!=""){
             $query=$query->whereBetween("usia_saat_ukur", [$params['umur_start'], $params['umur_end']]);
         }
+        //-hide bb=0, tb=0
+        if($params['hide_bb_0']=="y"){
+            $query=$query->where("berat_badan", "!=", 0);
+        }
+        if($params['hide_tb_0']=="y"){
+            $query=$query->where("tinggi_badan", "!=", 0);
+        }
         //--q
         $query=$query->where("data_anak->nama_lengkap", "like", "%".$params['q']."%");
         //--order
@@ -129,6 +138,8 @@ class SkriningBalitaRepo{
         $params['tindakan']=trim($params['tindakan']);
         $params['umur_start']=trim($params['umur_start']);
         $params['umur_end']=trim($params['umur_end']);
+        $params['hide_tb_0']=isset($params['hide_tb_0'])?trim($params['hide_tb_0']):"";
+        $params['hide_bb_0']=isset($params['hide_bb_0'])?trim($params['hide_bb_0']):"";
 
         //QUERY DESA, KECAMATAN WHERE PARAMS NOT EMPTY
         if($params['village_id']!=""){
@@ -223,6 +234,13 @@ class SkriningBalitaRepo{
             $query=$query->having(function($q)use($params){
                 $q->havingRaw("usia_saat_ukur >= ".$params['umur_start']." and usia_saat_ukur <= ".$params['umur_end']);
             });
+        }
+        //-hide bb=0, tb=0
+        if($params['hide_bb_0']=="y"){
+            $query=$query->having("berat_badan", "!=", 0);
+        }
+        if($params['hide_tb_0']=="y"){
+            $query=$query->having("tinggi_badan", "!=", 0);
         }
         //--q
         $query=$query->having("data_anak->nama_lengkap", "like", "%".$params['q']."%");
