@@ -119,6 +119,12 @@ $router->group(['prefix'=>'/intervensi_realisasi_bantuan', 'middleware'=>'auth']
     $router->get("/", ['uses'=>"IntervensiRealisasiBantuanController@gets"]);
 });
 
+//SETTING
+$router->group(['prefix'=>'/setting', 'middleware'=>'auth'], function()use($router){
+    $router->put("/update/bbtb_unknown", ['uses'=>"SettingController@update_bbtb_unknown"]);
+    $router->get("/get/count_bbtb_unknown", ['uses'=>"SettingController@get_count_bbtb_unknown"]);
+});
+
 //HOME
 $router->group(['prefix'=>'/home'], function()use($router){
     $router->get("/stunting_4118", ['uses'=>"HomeController@gets_stunting"]);

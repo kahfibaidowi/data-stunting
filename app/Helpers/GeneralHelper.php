@@ -128,3 +128,13 @@ function count_month($start, $end, $with_one=false){
     
     return $with_one?$diff+1:$diff;
 }
+function roundup_middle($tinggi_badan){
+    if($tinggi_badan>=floor($tinggi_badan)+0.5 && $tinggi_badan<floor($tinggi_badan)+1){
+        $tinggi_badan=floor($tinggi_badan)+0.5;
+    }
+    else{
+        $tinggi_badan=floor($tinggi_badan);
+    }
+
+    return $tinggi_badan;
+}
