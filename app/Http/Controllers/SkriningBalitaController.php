@@ -174,6 +174,25 @@ class SkriningBalitaController extends Controller
                     }
                 })
             ],
+            'data_anak'     =>"required",
+            'data_anak.nik' =>[
+                "required",
+                function($attr, $value, $fail)use($req, $today){
+                    if(!isset($req['id_skrining_balita'])) return $fail("id_skrining_balita error.");
+
+                    $t_skrining=SkriningBalitaModel::find($req['id_skrining_balita']);
+                    if(is_null($t_skrining)) return $fail("id_skining_balita invalid.");
+
+                    $umur=$t_skrining['usia_saat_ukur'];
+                    $r_skrining=SkriningBalitaModel::
+                        where("data_anak->nik", $value)
+                        ->where("usia_saat_ukur", $umur)
+                        ->where("id_skrining_balita", "!=", $req['id_skrining_balita'])
+                        ->first();
+                    if(!is_null($r_skrining)) return $fail("Umur untuk NIK sudah ada.");
+                }
+            ],
+            'data_anak.ibu.nik' =>"required",
             'berat_badan_lahir' =>"required|numeric",
             'tinggi_badan_lahir'=>"required|numeric",
             'berat_badan'   =>"required|numeric",
@@ -190,6 +209,17 @@ class SkriningBalitaController extends Controller
         DB::transaction(function()use($req){
             $skrining=SkriningBalitaModel::where("id_skrining_balita", $req['id_skrining_balita'])->lockForUpdate()->first();
 
+            //UPDATE OLD SKRINING(hasil status gizi=O)
+            if(trim($req['data_anak']['nik'])!=trim($skrining['data_anak']['nik'])){
+                SkriningBalitaModel::
+                    where("data_anak->nik", $skrining['data_anak']['nik'])
+                    ->where("usia_saat_ukur", $skrining['usia_saat_ukur']+1)
+                    ->update([
+                        'hasil_status_gizi' =>"O"
+                    ]);
+            }
+
+            //UPDATE
             //params
             $umur=$skrining['usia_saat_ukur'];
             $hasil_tinggi_badan_per_umur=SkriningBalitaRepo::generate_antropometri_panjang_badan_umur([
@@ -212,12 +242,18 @@ class SkriningBalitaController extends Controller
                 'jenis_kelamin' =>$skrining['data_anak']['jenis_kelamin'],
                 'umur'          =>$umur,
                 'berat_badan'   =>$req['berat_badan'],
-                'nik'           =>$skrining['data_anak']['nik']
+                'nik'           =>$req['data_anak']['nik']
             ]);
 
             //update
             SkriningBalitaModel::where("id_skrining_balita", $req['id_skrining_balita'])
                 ->update([
+                    'data_anak'     =>array_merge($skrining['data_anak'], [
+                        'nik'   =>$req['data_anak']['nik'],
+                        'ibu'   =>array_merge($skrining['data_anak']['ibu'], [
+                            'nik'   =>$req['data_anak']['ibu']['nik']
+                        ])
+                    ]),
                     'berat_badan_lahir' =>$req['berat_badan_lahir'],
                     'tinggi_badan_lahir'=>$req['tinggi_badan_lahir'],
                     'berat_badan'   =>$req['berat_badan'],
@@ -230,7 +266,7 @@ class SkriningBalitaController extends Controller
 
             //NEXT SKRINING
             $n_skrining=SkriningBalitaModel::
-                where("data_anak->nik", $skrining['data_anak']['nik'])
+                where("data_anak->nik", $req['data_anak']['nik'])
                 ->where("usia_saat_ukur", $umur+1)
                 ->orderBy("id_skrining_balita")
                 ->lockForUpdate()
